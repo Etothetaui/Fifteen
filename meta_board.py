@@ -1,0 +1,149 @@
+# Class to represent the game
+# Takes number of levels and syms of players
+# Creates board and player objects
+class Game:
+    def __init__(self, levels, syms):
+        # Board is a magic square
+        self.board = Board(levels, [6, 1, 8, 7, 5, 3, 2, 9, 4])
+        # declare players and assign syms
+        self.players = [Player(self, levels, syms[0]), Player(self, levels, syms[1])]
+
+# Class to represent each players
+# Takes number of levels and a symbol as well as a reference to the Game
+# Exceptions throw if any user input is not an integer or is not a correct index
+class Player:
+    def __init__(self, parent, levels, sym):
+        self.parent = parent
+        self.squares = Board(levels, [])
+        self.sym = sym
+    # Function to make a move
+    def move(self, moves):
+        # Store board and player squares for focusing
+        focus_board = self.parent.board
+        focus_squares = self.squares
+        # Remove first move from moves if list moves not empty
+        if len(moves) != 0:
+            moves.pop(0)
+        # Focus to where last player sent this player
+        # This needs to be done for board and player squares
+        for prev in moves:
+            focus_board = focus_board.children[prev]
+            focus_squares = focus_squares.children[prev]
+        # Print messege for user and then focus to move location
+        print("Player " + self.sym + " Turn")
+        # Append each focus move to list of moves to return for next player
+        # If there is no need to focus then this loop will be skipped
+        # Otherwise this loop will focus to the sub board where the player
+        # Wishes to play
+        for i in range(len(moves),self.parent.board.levels-1):
+            while True:
+                try:
+                    square = int(input("Navigate"+str(moves)+": "))-1
+                    focus_board = focus_board.children[square]
+                    focus_squares = focus_squares.children[square]
+                    moves.append(square%9)
+                    break
+                except(ValueError, IndexError):
+                    print("Invalid input, please try again")
+        # Ask user for move and then make move. Append move to list of moves
+        # The move is made by adding the players sym to the focused sub board
+        # Then the move is recorded in the players squares
+        while True:
+            try:
+                square = int(input("Move"+str([x+1 for x in moves])+": "))-1
+                if isinstance(focus_board.children[square], int):
+                    focus_squares.children.append(focus_board.children[square])
+                    focus_board.children[square] = self.sym
+                    moves.append(square%9)
+                    break
+                else:
+                    print("Square has already been played, please try again")
+            except(ValueError, IndexError):
+                print("Invalid move, please try again")
+        # Return list of moves for next player
+        return moves
+
+# Recursive class to generate the board
+# This is used to create the board in the Game class
+# It is also used to create the squares in the Player class
+# It takes the number of levels and a list, a magic square for the game board
+# And empty list for player squares
+class Board:
+    def __init__(self, levels, list):
+        # Store number of levels in board in order to use for
+        #recursive functions
+        self.levels = levels
+        # Base case is a a list
+        if levels == 1:
+            self.children = list
+        # Otherwise create a list of 9 boards of one level smaller
+        else:
+            self.children = []
+            for i in range(9):
+                self.children.append(Board(levels-1, list.copy()))
+    # Recursive Function to turn board into 1D list of integers using
+    # Modular arithmatic and integer division
+    # May need to be optimized (I think there is a way to do this in fewer
+    # Lines of code, but I haven't figured out the recursion yet)
+    def make_board(self):
+        copy_board = []
+        n = int(len(self.children)**0.5)
+        if self.levels == 1:
+            copy_board = self.children
+        elif self.levels == 2:
+            for row in range(n**2):
+                for col in range(n**2):
+                    x = n*(row//n)+col//n
+                    y = n*(row%n)+col%n
+                    copy_board.append(self.children[x].children[y])
+        else:
+            temp = []
+            for child in self.children:
+                temp.append(child.make_board())
+            d=self.levels
+            for row in range(3**d):
+                for col in range(3**d):
+                    x = 3*(row//(3**(d-1)))+col//(3**(d-1))
+                    y = (3**(d-1))*(row%(3**(d-1)))+col%(3**(d-1))
+                    copy_board.append(temp[x][y])
+        return copy_board
+    # Function to print list generated by make_board as a board
+    # Prints an empty square if element is a number and
+    # Prints sym if a move has been made in that square
+    def print_board(self):
+        list = self.make_board()
+        for i in range(len(list)):
+            if isinstance(list[i],int):
+                print("\u25A1", end =" ")
+            else:
+                print(list[i], end=" ")
+            # Prints a new line every square root of the length of the list
+            # This may need to be changed to add border lines, but I am
+            # Unsure how to do that for any size board
+            if i % len(list)**0.5 == len(list)**0.5 - 1:
+                print()
+
+# Main function to play the game
+def main():
+    while True:
+        # Throws exception if input is not an integer or not positive
+        try:
+            # Ask user for size of board
+            levels = int(input("How many levels would you like? "))
+            # Initialize game with levels and player syms
+            game = Game(levels, ['X', 'O'])
+            break
+        except(ValueError, RecursionError):
+            print("Invalid number of levels, please try again")
+    # Initialize number of turns to zero and list of moves to empty
+    moves, turn = [], 0
+
+    # Main loop for game, will need to be expanded as more features
+    # Are implemented
+    while True:
+        game.board.print_board()
+        moves = game.players[turn%2].move(moves)
+        turn += 1
+
+if __name__ == '__main__':
+    main()
