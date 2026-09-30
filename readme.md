@@ -38,7 +38,7 @@ These are position numbers, not the internal magic-square values. Get three mark
 | --- | --- |
 | `fifteen.py` | Two-player terminal game with functions and a small Player class. |
 | `tictactoe.py` | Two-player variant organized into Game and Player classes. |
-| `fifteen2.py` | Experimental computer opponent using minimax; the computer plays X and opens randomly. |
+| `fifteen_ai_experimental.py` | **Experimental:** computer opponent using minimax; the computer plays X and opens randomly. |
 | `meta_board.py` | Experimental recursive boards with configurable levels and navigation between subboards. |
 | `print_squares.py` | Standalone demonstration of flattening and printing nested square arrays. |
 
@@ -46,7 +46,20 @@ Run any script directly with Python to try it.
 
 ## Project status
 
-This repository preserves the original five scripts from `15gamePython` in [Etothetaui/dumb_stuff](https://github.com/Etothetaui/dumb_stuff/tree/main/15gamePython), as viewed at source commit `ab5d6b830ec072b7657c961aaf0e1dea39286da6`.
+This is a development version. The application version is defined once as
+`__version__` in [version.py](version.py), using semantic versioning with a
+`-dev` prerelease label. To display it without starting a game, run:
+
+```sh
+python fifteen.py --version
+```
+
+The same flag works with `tictactoe.py`, `fifteen_ai_experimental.py`, and
+`meta_board.py`. For future versions, update only `version.py`; the game
+commands read that shared value. Source filenames and the project directory
+do not include version numbers.
+
+This repository originated from the five scripts in `15gamePython` in [Etothetaui/dumb_stuff](https://github.com/Etothetaui/dumb_stuff/tree/main/15gamePython), as viewed at source commit `ab5d6b830ec072b7657c961aaf0e1dea39286da6`. The original `fifteen2.py` is now named `fifteen_ai_experimental.py` to identify its purpose and status.
 
 These are learning experiments. Input validation can accept zero or negative positions through Python's negative indexing; use positions 1–9. The minimax variant is experimental and should not be treated as an unbeatable opponent. The recursive-board experiment does not yet detect wins or ties and runs until interrupted. Large level counts grow the board rapidly.
 

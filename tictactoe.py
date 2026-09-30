@@ -107,4 +107,6 @@ def game():
         print("It's a tie!")
 
 if __name__ == '__main__':
+    from version import parse_version_args
+    parse_version_args()
     game()

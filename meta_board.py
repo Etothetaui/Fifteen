@@ -146,4 +146,6 @@ def main():
         turn += 1
 
 if __name__ == '__main__':
+    from version import parse_version_args
+    parse_version_args()
     main()

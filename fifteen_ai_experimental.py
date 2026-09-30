@@ -1,3 +1,9 @@
+"""Experimental tic-tac-toe computer opponent using minimax.
+
+The computer plays X and the human plays O. The search has known correctness
+issues and is not a reliable or unbeatable opponent.
+"""
+
 import random
 
 class Game:
@@ -129,4 +135,6 @@ def main():
 
 
 if __name__ == '__main__':
+    from version import parse_version_args
+    parse_version_args()
     main()
