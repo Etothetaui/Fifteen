@@ -1,92 +1,118 @@
 #!/usr/bin/env python3
+"""Play magic-square tic-tac-toe with another human or the alpha-beta AI."""
 
-# Player Object. Takes symbol as argument
-# Contains symbol and array of moves made
+import argparse
+
+from version import parse_version_args
+
+MAGIC_BOARD = (6, 1, 8, 7, 5, 3, 2, 9, 4)
+
+
 class Player:
     def __init__(self, sym):
         self.sym = sym
         self.squares = []
 
-# Function to print board. Prints an empty square if element is a number and
-# prints sym if a move has been made in that square
+
 def print_board(board):
-    for i in range(len(board)):
-        if isinstance(board[i], int):
-            print("\u25A1", end =" ")
-        else:
-            print(board[i], end =" ")
+    for i, square in enumerate(board):
+        print("\u25A1" if isinstance(square, int) else square, end=" ")
         if i % 3 == 2:
             print()
 
-# Function to check if player is a winner
+
 def isWinner(player):
-    # Player can only win with a set of three, including the last move which
-    # adds up to 15 due to the properties of magic squares
-    for i in range(len(player.squares)-1):
-        for j in range(i+1, len(player.squares)-1):
-            if player.squares[i]+player.squares[j]+player.squares[-1] == 15:
+    # Only triples containing the latest move can create a new win.
+    for i in range(len(player.squares) - 1):
+        for j in range(i + 1, len(player.squares) - 1):
+            if player.squares[i] + player.squares[j] + player.squares[-1] == 15:
                 return True
     return False
 
-# Function to make a players move
-# Takes board and player as arguments
+
+def apply_move(board, player, square):
+    """Apply a validated zero-based move for either a human or the AI."""
+    if not isinstance(square, int) or not 0 <= square < 9:
+        raise ValueError("Enter a position from 1 to 9.")
+    if not isinstance(board[square], int):
+        raise ValueError("Square has already been played, please try again.")
+    player.squares.append(board[square])
+    board[square] = player.sym
+
+
 def move(board, player):
     while True:
-        # Check to see if player move is an integer and in range,
-        # If not, throw exception
         try:
-            square = int(input("Player " + player.sym + " Turn: "))-1
-            # If input is between 1 and 9 (inclusive) and the corresponding
-            # spot on the board has not already been taken add move to
-            #player's list of moves, add move to bard, and then print board
-            if isinstance(board[square], int):
-                player.squares.append(board[square])
-                board[square] = player.sym
+            square = int(input(f"Player {player.sym} Turn: ")) - 1
+        except ValueError:
+            print("Enter a position from 1 to 9.")
+            continue
+        try:
+            apply_move(board, player, square)
+        except ValueError as error:
+            print(error)
+            continue
+        return square
 
-                print_board(board)
-                print("-----")
-                break
-            # If invalid move print error message
-            else:
-                print("Square has already been played, please try again")
-        # If exception is thrown, print error message
-        except(ValueError, IndexError):
-            print("Invalid move, please try again")
-    return square
 
-# Main function for game
-def game():
-    # Declare board as a magic square
-    board = [6, 1, 8,
-             7, 5, 3,
-             2, 9, 4]
-    # Declare players
+def choose_ai_move(board, player, engine):
+    """Translate the game's magic-square board at the engine boundary."""
+    from alpha_beta_engine import FifteenPosition
+
+    cells = [0 if isinstance(cell, int) else (1 if cell == "X" else -1)
+             for cell in board]
+    position = FifteenPosition(cells, 1 if player.sym == "X" else -1)
+    # Search to terminal positions with no deadline: no heuristic fallback can
+    # weaken the never-lose guarantee from a legal starting position.
+    result = engine.search(position, max(1, cells.count(0)))
+    if result.move is None:
+        raise ValueError("Cannot choose a move after the game is over.")
+    return result.move
+
+
+def game(ai=False, human="X"):
+    if human not in ("X", "O"):
+        raise ValueError("human must be X or O")
+    engine = None
+    if ai:
+        from alpha_beta_engine import AlphaBetaEngine
+        engine = AlphaBetaEngine()
+        print(f"You are {human}. AI is {'O' if human == 'X' else 'X'}. X goes first.")
+    board = list(MAGIC_BOARD)
     players = [Player("X"), Player("O")]
-    # Initialize number of moves to zero
-    turn = 0;
-
-    # Print blank board
+    print("Choose positions:\n1 2 3\n4 5 6\n7 8 9")
     print_board(board)
     print("-----")
+    for turn in range(9):
+        player = players[turn % 2]
+        if ai and player.sym != human:
+            square = choose_ai_move(board, player, engine)
+            apply_move(board, player, square)
+            print(f"AI ({player.sym}) chooses position {square + 1}.")
+        else:
+            move(board, player)
+        print_board(board)
+        print("-----")
+        if isWinner(player):
+            print(f"Player {player.sym} wins!")
+            return player.sym
+    print("It's a tie!")
+    return None
 
-    # Loop for maximum 9 turns, since the board has only 9 elements in it
-    while turn < 9:
-        # Use mod 2 to alternate between the two players
-        # Ask player for move and check if player has made a winning move
-        # If player has won, print winning message and end game
-        # Increment number of moves
-        move(board, players[turn%2])
-        if isWinner(players[turn%2]):
-            print("Player " + players[turn%2].sym + " wins!")
-            break
-        turn += 1
 
-    # If maximum of 9 moves have been played and the game has not been won
-    # Then a tie has occurred. print tie message
-    if turn == 9:
-        print("It's a tie!")
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--ai", action="store_true", help="play against the alpha-beta AI")
+    parser.add_argument("--human", choices=("X", "O"), default=None,
+                        help="your symbol in AI mode: X goes first (default: X)")
+    args = parse_version_args(parser)
+    if args.human is not None and not args.ai:
+        parser.error("--human requires --ai")
+    try:
+        game(ai=args.ai, human=args.human or "X")
+    except (EOFError, KeyboardInterrupt):
+        print("\nGame ended.")
 
-if __name__ == '__main__':
-    from version import parse_version_args
-    parse_version_args()
-    game()
+
+if __name__ == "__main__":
+    main()
