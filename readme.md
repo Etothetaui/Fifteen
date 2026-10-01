@@ -1,6 +1,6 @@
 # Fifteen
 
-Python terminal games and experiments connecting tic-tac-toe with the numbers 1–9 and a magic square.
+Browser and Python terminal games connecting tic-tac-toe with the numbers 1–9 and a magic square.
 
 The board stores this magic square internally:
 
@@ -13,6 +13,37 @@ The board stores this magic square internally:
 Every winning row, column, or diagonal sums to **15**. Each player records the numbers behind their chosen squares; the game checks whether three of those numbers, including the latest move, sum to 15.
 
 ## Run
+
+### Play online
+
+[Play Fifteen](https://etothetaui.github.io/Fifteen/) in your browser.
+Choose two players, play as X or O against the computer, or watch two computers.
+The first visit downloads the Python runtime and may take a moment.
+
+### Local web preview
+
+From this directory, start a static server:
+
+```sh
+python -m http.server 8000 --bind 127.0.0.1
+```
+
+Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
+as a file: the Python loader needs HTTP. The four modes are two humans, human X
+versus computer O, human O versus computer X, and two computers. Selecting a
+mode or pressing **New game** starts a fresh board, including during AI play.
+
+`ui.py` owns browser game state, validation, turns, status, and AI actions.
+`web.js` renders snapshots and forwards input; `python-worker.js` runs Python
+and the existing engine through Pyodide 0.28.1 in a background worker. `web.css`
+contains presentation styles. An internet connection is required to download
+the pinned Python runtime from jsDelivr on first use; fonts load from Google
+Fonts with local fallbacks. No game data is sent to a Python server.
+
+The page uses relative paths and `.nojekyll` for GitHub Pages hosting from the
+`main` branch's root directory. No backend server is needed.
+
+### Terminal game
 
 Requires Python 3.10 or newer and a terminal that can display Unicode. There are no third-party dependencies.
 
@@ -50,6 +81,9 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | File | Purpose |
 | --- | --- |
 | `fifteen.py` | Main terminal game: two humans or human versus alpha-beta AI. |
+| `index.html`, `web.css`, `web.js` | Browser page, styling, and input/rendering bridge. |
+| `ui.py` | Python browser-game controller for all four play modes. |
+| `python-worker.js` | Loads Python and runs the controller in a background browser worker. |
 | `tictactoe.py` | Two-player variant organized into Game and Player classes. |
 | `fifteen_ai_experimental.py` | **Experimental:** computer opponent using minimax; the computer plays X and opens randomly. |
 | `meta_board.py` | Experimental recursive boards with configurable levels and navigation between subboards. |
@@ -58,8 +92,9 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | `version.py` | Shared application version and command-line version reporting. |
 | `test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
 | `test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
+| `test_ui.py` | Browser-controller modes, restart, validation, and computer-play checks. |
 
-Run any script directly with Python to try it.
+Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
 ## Search engine
 
@@ -101,6 +136,12 @@ additional search heuristics are deferred until measurements justify them.
 Run all engine and game checks with `python -m unittest discover -v`.
 
 ## Project status
+
+For each publication to GitHub, increment the patch (last numeric) component
+of the version and retain `-dev`. Change larger components only when explicitly
+requested. Keep [CHANGELOG.md](CHANGELOG.md), the README, relevant code comments,
+and the commit description current. The executable version stays defined only
+in `version.py`.
 
 This is a development version. The application version is defined once as
 `__version__` in [version.py](version.py), using semantic versioning with a

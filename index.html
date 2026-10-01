@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f2e9">
+  <title>Fifteen — Your next move</title>
+  <link rel="stylesheet" href="web.css">
+  <script src="web.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="./">fifteen<span>15</span></a><span class="edition">A LITTLE GAME OF POSSIBILITIES</span><span id="version">Development preview</span></header>
+  <main>
+    <section class="intro">
+      <p class="eyebrow"><span class="dot"></span> THREE IN A ROW. ENDLESS REMATCHES.</p>
+      <h1>Your next<br>move<span class="accent">.</span></h1>
+      <p class="lede">A familiar game with a clever little twist.<br>Pick a side. Challenge a friend. Take on the machine.</p>
+      <fieldset id="modes" disabled>
+        <legend>01 / CHOOSE YOUR GAME</legend>
+        <label class="mode"><input type="radio" name="mode" value="human-human"><span class="mode-icon">X O</span><span><strong>Two players</strong><small>You and a friend, one board</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="human-x" checked><span class="mode-icon">X</span><span><strong>You as X</strong><small>Go first against the computer</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="human-o"><span class="mode-icon">O</span><span><strong>You as O</strong><small>Let the computer make its move</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="computer-computer"><span class="mode-icon">↔</span><span><strong>Watch computers</strong><small>Two perfect players. Sit back.</small></span></label>
+      </fieldset>
+      <p class="mode-note">Changing modes starts a fresh game.</p>
+    </section>
+    <section class="play-area" aria-label="Game">
+      <div class="game-top"><span class="eyebrow">02 / MAKE YOUR MOVE</span><span id="move-count">MOVE 00 / 09</span></div>
+      <div class="players"><div id="player-x" class="player active"><b>X</b><span>Human</span></div><span class="versus">VS</span><div id="player-o" class="player"><b>O</b><span>Computer</span></div></div>
+      <div class="status-wrap"><h2 id="status" role="status" aria-live="polite">Getting the board ready…</h2><p id="substatus">The first visit may take a moment.</p></div>
+      <div id="board" class="board" role="group" aria-label="Tic-tac-toe board"></div>
+      <button id="new-game" class="new-game" disabled>↻ <span>New game</span><span class="button-arrow">↗</span></button>
+      <button id="retry" hidden>Retry loading</button>
+      <p class="hint">A fresh start, whenever you want.</p>
+      <div class="moves"><span>THE MOVES</span><p id="history">The story starts with an empty square.</p></div>
+    </section>
+  </main>
+  <footer><span>WHY FIFTEEN?</span><p>Behind the board is a magic square.<br>Every winning line adds up to fifteen.</p><span class="footer-mark">6 1 8<br>7 5 3<br>2 9 4</span><span class="footer-end">Simple rules. Thoughtful moves.</span></footer>
+  <noscript>This game needs JavaScript enabled to run Python in your browser.</noscript>
+</body>
+</html>

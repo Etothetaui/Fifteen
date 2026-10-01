@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.2-dev
+
+- Add the responsive browser game with four modes: two humans, human X,
+  human O, and computer versus computer.
+- Run the existing Python engine in a Pyodide worker, with `ui.py` managing
+  turns, validation, game status, winning lines, and move history.
+- Add mid-game restart, safe handling of outdated worker replies, loading
+  feedback, retry controls, and keyboard-accessible board buttons.
+- Prepare root-based GitHub Pages hosting and document online and local play.
+- Add UI-controller tests; all 14 automated tests pass.
+- Record the release policy: increment the patch version on each publication,
+  retain `-dev`, and update change descriptions and documentation.
+
 ## 0.0.1-dev
 
 - Add `--ai` mode to the main game, with `--human X` or `--human O`.

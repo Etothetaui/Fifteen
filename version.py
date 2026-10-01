@@ -1,6 +1,6 @@
 """Single source of truth for the Fifteen application version."""
 
-__version__ = "0.0.1-dev"
+__version__ = "0.0.2-dev"
 
 
 def parse_version_args(parser=None):
