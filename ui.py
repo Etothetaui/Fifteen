@@ -54,8 +54,7 @@ class GameUI:
 
     def snapshot(self):
         board = self.position.board
-        winning = next((list(line) for line in FifteenPosition._lines
-                        if board[line[0]] and len({board[i] for i in line}) == 1), [])
+        winning = list(self.position.winning_squares())
         over = self.position.terminal_score() is not None
         mark = "X" if self.position.turn == 1 else "O"
         computer = not over and self.position.turn not in MODES[self.mode][1]

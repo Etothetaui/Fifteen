@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4
+
+- Replace separate geometric win checks with the original Python magic-square
+  move handling and sum-to-15 rule in the browser and AI adapter.
+- Load `fifteen.py` in the browser worker; derive winning highlights from the
+  same magic-square rule. Keep the web layout, controls, and game modes unchanged.
+- Check all 5,478 reachable positions and verify search restores player state.
+
 ## 0.0.3-dev
 
 - Remove the superscript 15 from the header title.

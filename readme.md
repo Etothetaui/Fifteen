@@ -33,7 +33,9 @@ as a file: the Python loader needs HTTP. The four modes are two humans, human X
 versus computer O, human O versus computer X, and two computers. Selecting a
 mode or pressing **New game** starts a new game, including during AI play.
 
-`ui.py` owns browser game state, validation, turns, status, and AI actions.
+`ui.py` controls browser turns, status, and AI actions. Both the browser and
+AI adapter reuse `Player`, `apply_move`, and the sum-to-15 win rule from
+`fifteen.py`. The magic-square values stay internal; they are not shown in the UI.
 `web.js` renders snapshots and forwards input; `python-worker.js` runs Python
 and the existing engine through Pyodide 0.28.1 in a background worker. `web.css`
 contains presentation styles. An internet connection is required to download
@@ -96,7 +98,9 @@ Run the terminal game scripts directly with Python, or use the web preview instr
 
 ## Search engine
 
-`alpha_beta_engine.py` powers the main game's AI mode through a small board adapter.
+`alpha_beta_engine.py` searches through an adapter backed by the original
+magic-square board and players in `fifteen.py`. It has no separate row, column,
+or diagonal win rules. Winning highlights also come from sum-to-15 triples.
 The old experimental script remains separate. Run `python alpha_beta_engine.py` for an opening-move
 demonstration, or import it:
 
@@ -143,7 +147,8 @@ in `version.py`.
 
 This is a development version. The application version is defined once as
 `__version__` in [version.py](version.py), using semantic versioning with a
-`-dev` prerelease label. To display it without starting a game, run:
+`-dev` prerelease label for development versions. Version `0.0.4` uses the
+exact release label requested for this correction. To display it without starting a game, run:
 
 ```sh
 python fifteen.py --version

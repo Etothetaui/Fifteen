@@ -4,7 +4,7 @@ let dispatch;
 async function initialize() {
   importScripts(runtimeURL + 'pyodide.js');
   const py = await loadPyodide({indexURL: runtimeURL});
-  for (const name of ['version.py', 'alpha_beta_engine.py', 'ui.py']) {
+  for (const name of ['version.py', 'fifteen.py', 'alpha_beta_engine.py', 'ui.py']) {
     const response = await fetch(new URL(name, self.location.href));
     if (!response.ok) throw new Error(`Could not load ${name}`);
     py.FS.writeFile(name, await response.text());

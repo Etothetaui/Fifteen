@@ -3,6 +3,32 @@ from ui import GameUI, MODES
 
 
 class UITests(unittest.TestCase):
+    def test_every_reachable_board_uses_magic_square_results(self):
+        from alpha_beta_engine import FifteenPosition
+        from fifteen import MAGIC_BOARD
+        from test_alpha_beta_engine import reachable, outcome
+        ui = GameUI()
+        for cells, turn in reachable():
+            ui.position = FifteenPosition(cells, turn)
+            state = ui.snapshot()
+            expected = outcome(cells, turn)
+            self.assertEqual(state['over'], expected is not None)
+            self.assertEqual(bool(state['winning']), expected not in (None, 0))
+            if state['winning']:
+                self.assertEqual(sum(MAGIC_BOARD[i] for i in state['winning']), 15)
+                self.assertEqual(len({cells[i] for i in state['winning']}), 1)
+
+    def test_original_move_state_is_restored_after_search(self):
+        from fifteen import MAGIC_BOARD
+        ui = GameUI()
+        ui.play(0)
+        self.assertEqual(ui.position.players[1].squares, [6])
+        self.assertEqual(ui.position.magic_board, ['X', *MAGIC_BOARD[1:]])
+        before = {mark: player.squares.copy() for mark, player in ui.position.players.items()}
+        ui.engine.search(ui.position, 8)
+        self.assertEqual({mark: player.squares for mark, player in ui.position.players.items()}, before)
+        self.assertEqual(ui.position.magic_board, ['X', *MAGIC_BOARD[1:]])
+
     def test_four_modes_and_restart(self):
         ui = GameUI()
         for mode in MODES:

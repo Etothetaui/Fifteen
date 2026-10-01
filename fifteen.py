@@ -21,13 +21,20 @@ def print_board(board):
             print()
 
 
+def winning_triples(squares, *, latest_only=False):
+    """Use the original sum-to-15 rule; optionally check only the latest move."""
+    # Imported search positions have no move order, so check each possible
+    # final move. Live terminal play keeps the original latest-move check.
+    ends = (len(squares) - 1,) if latest_only else range(2, len(squares))
+    for last in ends:
+        for i in range(last):
+            for j in range(i + 1, last):
+                if squares[i] + squares[j] + squares[last] == 15:
+                    yield (squares[i], squares[j], squares[last])
+
+
 def isWinner(player):
-    # Only triples containing the latest move can create a new win.
-    for i in range(len(player.squares) - 1):
-        for j in range(i + 1, len(player.squares) - 1):
-            if player.squares[i] + player.squares[j] + player.squares[-1] == 15:
-                return True
-    return False
+    return next(winning_triples(player.squares, latest_only=True), None) is not None
 
 
 def apply_move(board, player, square):

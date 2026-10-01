@@ -12,6 +12,7 @@ from time import monotonic
 from typing import Hashable, Iterable, Protocol
 
 from version import __version__
+from fifteen import MAGIC_BOARD, Player, apply_move, winning_triples
 
 
 class Position(Protocol):
@@ -161,52 +162,69 @@ class AlphaBetaEngine:
 
 
 class FifteenPosition:
-    """Standard 3x3 game adapter. Moves are zero-based cell indices.
+    """Adapter for the original Python magic-square game. Moves are zero-based cell indices.
 
     board contains 0 (empty), 1 (X), or -1 (O); turn is 1 or -1.
     Custom boards must be reachable legal positions. Callers own this invariant.
     """
 
-    _lines = ((0, 1, 2), (3, 4, 5), (6, 7, 8),
-              (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6))
     _order = (4, 0, 2, 6, 8, 1, 3, 5, 7)
 
     def __init__(self, board=None, turn=1):
-        self.board = list(board) if board is not None else [0] * 9
-        if len(self.board) != 9 or any(x not in (-1, 0, 1) for x in self.board):
+        cells = list(board) if board is not None else [0] * 9
+        if len(cells) != 9 or any(x not in (-1, 0, 1) for x in cells):
             raise ValueError("board must contain nine values from -1, 0, 1")
         if turn not in (-1, 1):
             raise ValueError("turn must be 1 (X) or -1 (O)")
+        self.magic_board = list(MAGIC_BOARD)
+        self.players = {1: Player("X"), -1: Player("O")}
+        for square, mark in enumerate(cells):
+            if mark:
+                apply_move(self.magic_board, self.players[mark], square)
         self.turn = turn
+
+    @property
+    def board(self):
+        """Presentation/cache encoding; game state retains the magic numbers."""
+        return [0 if isinstance(cell, int) else 1 if cell == "X" else -1
+                for cell in self.magic_board]
 
     def key(self):
         return tuple(self.board), self.turn
 
+    def winning_squares(self):
+        """Map sum-to-15 triples to display positions without geometric rules."""
+        triples = [tuple(sorted(MAGIC_BOARD.index(value) for value in triple))
+                   for player in self.players.values()
+                   for triple in winning_triples(player.squares)]
+        # Keep the existing highlight order if a final move completes two wins.
+        return min(triples, key=lambda cells: (
+            0 if cells[1] - cells[0] == 1 else
+            1 if cells[1] - cells[0] == 3 else 2, cells), default=())
+
     def terminal_score(self):
-        for a, b, c in self._lines:
-            if self.board[a] and self.board[a] == self.board[b] == self.board[c]:
-                # Prefer earlier wins. Empty-cell count is position-relative,
-                # so cached scores remain valid across different search paths.
-                return self.board[a] * self.turn * (1 + self.board.count(0))
-        return None if 0 in self.board else 0
+        empty = sum(isinstance(cell, int) for cell in self.magic_board)
+        for mark, player in self.players.items():
+            if next(winning_triples(player.squares), None) is not None:
+                # Scores remain position-relative so cached results are valid.
+                return mark * self.turn * (1 + empty)
+        return None if empty else 0
 
     def evaluate(self):
         # Neutral horizon estimate. Use all remaining plies for optimal play.
         return 0
 
     def legal_moves(self):
-        return (i for i in self._order if self.board[i] == 0)
+        return (i for i in self._order if isinstance(self.magic_board[i], int))
 
     def play(self, move):
-        if not isinstance(move, int) or not 0 <= move < 9 or self.board[move]:
-            raise ValueError("move must identify an empty cell from 0 through 8")
-        self.board[move] = self.turn
+        apply_move(self.magic_board, self.players[self.turn], move)
         self.turn = -self.turn
         return move
 
     def undo(self, token):
         self.turn = -self.turn
-        self.board[token] = 0
+        self.magic_board[token] = self.players[self.turn].squares.pop()
 
 
 if __name__ == "__main__":

@@ -13,3 +13,9 @@
 
 - Use plain, functional UI labels and documentation. Do not add slogans,
   promotional copy, or commentary about the player's experience.
+
+- Preserve the original magic-square game logic in `fifteen.py`. Browser UI and
+  AI must reuse it, never substitute separate geometric win rules. Keep the
+  magic-square implementation hidden from the game UI.
+- Do not add unrequested UI content or features. Explicit user version labels
+  and requests to keep a version unchanged override the default bump policy.
