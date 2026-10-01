@@ -2,6 +2,7 @@
 
 ## 0.0.3-dev
 
+- Remove the superscript 15 from the header title.
 - Remove the magic-square explanation from the game interface.
 - Remove slogans and promotional text from the browser interface.
 - Use direct labels for modes, loading, moves, and game results.
