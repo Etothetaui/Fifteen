@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3-dev
+
+- Remove slogans and promotional text from the browser interface.
+- Use direct labels for modes, loading, moves, and game results.
+- Simplify the README introduction and AI description.
+
 ## 0.0.2-dev
 
 - Add the responsive browser game with four modes: two humans, human X,

@@ -26,12 +26,12 @@ function restart() {
   if (!ready) return;
   clearTimeout(timer); generation++;
   // Old replies cannot redraw a board or schedule moves after a restart.
-  statusText.textContent = 'Starting a fresh game…';
+  statusText.textContent = 'Starting a new game…';
   send({action: 'new', mode: selectedMode()});
 }
 function render() {
   statusText.textContent = state.status;
-  substatus.textContent = state.over ? 'Another round? The board is yours.' : state.computer_turn ? 'Finding the strongest move.' : 'Choose an empty square. X always starts.';
+  substatus.textContent = state.over ? 'Game over.' : state.computer_turn ? '' : 'Choose an empty square. X always starts.';
   document.querySelector('#version').textContent = `v${state.version}`;
   document.querySelector('#move-count').textContent = `MOVE ${String(state.history.length).padStart(2,'0')} / 09`;
   for (const mark of ['X','O']) {
@@ -45,7 +45,7 @@ function render() {
     cell.disabled = busy || state.over || state.computer_turn || !!state.board[i];
     cell.setAttribute('aria-label', `Position ${i+1}, ${state.board[i] || 'empty'}${state.winning.includes(i) ? ', winning line' : ''}`);
   });
-  document.querySelector('#history').textContent = state.history.length ? state.history.map(m => `${m.mark} → ${m.square}`).join('  ·  ') : 'The story starts with an empty square.';
+  document.querySelector('#history').textContent = state.history.length ? state.history.map(m => `${m.mark} → ${m.square}`).join('  ·  ') : 'No moves yet.';
   clearTimeout(timer);
   if (state.computer_turn) {
     const current = generation;
@@ -62,8 +62,8 @@ function fail(error) {
 function boot() {
   if (worker) worker.terminate();
   clearTimeout(timer); generation++; ready = false; busy = true;
-  retry.hidden = true; statusText.textContent = 'Getting the board ready…';
-  substatus.textContent = 'The first visit may take a moment.';
+  retry.hidden = true; statusText.textContent = 'Loading…';
+  substatus.textContent = 'Downloading the Python runtime.';
   worker = new Worker('python-worker.js');
   worker.onerror = event => fail(event.message);
   worker.onmessage = ({data}) => {

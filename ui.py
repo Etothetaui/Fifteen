@@ -60,13 +60,13 @@ class GameUI:
         mark = "X" if self.position.turn == 1 else "O"
         computer = not over and self.position.turn not in MODES[self.mode][1]
         if winning:
-            status = f"{'X' if board[winning[0]] == 1 else 'O'} wins!"
+            status = f"{'X' if board[winning[0]] == 1 else 'O'} wins."
         elif over:
-            status = "A well-played draw."
+            status = "Draw."
         elif computer:
-            status = f"Computer {mark} is thinking…"
+            status = f"Computer {mark} is moving…"
         else:
-            status = f"{mark}, your move."
+            status = f"{mark} to move."
         humans = MODES[self.mode][1]
         return {"version": __version__, "mode": self.mode,
                 "board": ["X" if cell == 1 else "O" if cell == -1 else "" for cell in board],

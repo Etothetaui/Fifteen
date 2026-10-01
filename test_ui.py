@@ -33,7 +33,7 @@ class UITests(unittest.TestCase):
         for cell in (0, 3, 1, 4, 2):
             state = ui.play(cell)
         self.assertEqual(state['winning'], [0, 1, 2])
-        self.assertEqual(state['status'], 'X wins!')
+        self.assertEqual(state['status'], 'X wins.')
         with self.assertRaises(ValueError): ui.play(8)
         ui.new_game('human-o')
         with self.assertRaises(ValueError): ui.play(0)

@@ -1,6 +1,6 @@
 # Fifteen
 
-Browser and Python terminal games connecting tic-tac-toe with the numbers 1–9 and a magic square.
+Tic-tac-toe for the browser and terminal, with a Python alpha-beta engine.
 
 The board stores this magic square internally:
 
@@ -31,7 +31,7 @@ python -m http.server 8000 --bind 127.0.0.1
 Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
 as a file: the Python loader needs HTTP. The four modes are two humans, human X
 versus computer O, human O versus computer X, and two computers. Selecting a
-mode or pressing **New game** starts a fresh board, including during AI play.
+mode or pressing **New game** starts a new game, including during AI play.
 
 `ui.py` owns browser game state, validation, turns, status, and AI actions.
 `web.js` renders snapshots and forwards input; `python-worker.js` runs Python
@@ -70,9 +70,7 @@ python fifteen.py --ai            # You are X and go first.
 python fifteen.py --ai --human O  # AI is X and goes first.
 ```
 
-The main game's AI uses full-depth alpha-beta search. It takes forced wins and
-otherwise secures a draw; it never deliberately chooses a weaker move. Wins are
-scored to prefer finishing sooner. There is no random opening or time limit.
+The AI uses full-depth alpha-beta search and prefers faster wins. There is no random opening or time limit.
 `python fifteen.py` still starts the two-human mode. Use `--help` for options
 and `--version` to display the current version. `--human` requires `--ai`.
 

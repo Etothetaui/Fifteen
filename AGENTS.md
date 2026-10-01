@@ -10,3 +10,6 @@
 - Keep version numbers out of source filenames and directory names.
 - Run the relevant checks before publishing. The complete test command is
   `python -m unittest discover -v`.
+
+- Use plain, functional UI labels and documentation. Do not add slogans,
+  promotional copy, or commentary about the player's experience.
