@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Play magic-square tic-tac-toe with another human or the alpha-beta AI."""
-
-import argparse
-
-from version import parse_version_args
+"""Shared Fifteen rules, state, and game sessions."""
 
 MAGIC_BOARD = (6, 1, 8, 7, 5, 3, 2, 9, 4)
 
@@ -14,17 +10,10 @@ class Player:
         self.squares = []
 
 
-def print_board(board):
-    for i, square in enumerate(board):
-        print("\u25A1" if isinstance(square, int) else square, end=" ")
-        if i % 3 == 2:
-            print()
-
-
 def winning_triples(squares, *, latest_only=False):
     """Use the original sum-to-15 rule; optionally check only the latest move."""
     # Imported search positions have no move order, so check each possible
-    # final move. Live terminal play keeps the original latest-move check.
+    # final move. The original latest-move helper remains available below.
     ends = (len(squares) - 1,) if latest_only else range(2, len(squares))
     for last in ends:
         for i in range(last):
@@ -47,19 +36,49 @@ def apply_move(board, player, square):
     board[square] = player.sym
 
 
-def move(board, player):
-    while True:
-        try:
-            square = int(input(f"Player {player.sym} Turn: ")) - 1
-        except ValueError:
-            print("Enter a position from 1 to 9.")
-            continue
-        try:
-            apply_move(board, player, square)
-        except ValueError as error:
-            print(error)
-            continue
-        return square
+class GameState:
+    """Original magic-square state; custom boards must be reachable positions."""
+
+    def __init__(self, board=None, turn=1):
+        cells = list(board) if board is not None else [0] * 9
+        if len(cells) != 9 or any(x not in (-1, 0, 1) for x in cells):
+            raise ValueError("board must contain nine values from -1, 0, 1")
+        if turn not in (-1, 1):
+            raise ValueError("turn must be 1 (X) or -1 (O)")
+        self.magic_board = list(MAGIC_BOARD)
+        self.players = {1: Player("X"), -1: Player("O")}
+        for square, mark in enumerate(cells):
+            if mark:
+                apply_move(self.magic_board, self.players[mark], square)
+        self.turn = turn
+
+    @property
+    def board(self):
+        """Presentation/cache encoding; game state retains the magic numbers."""
+        return [0 if isinstance(cell, int) else 1 if cell == "X" else -1
+                for cell in self.magic_board]
+
+    def winning_cells(self):
+        """Return every winning triple as board indices, without display ordering."""
+        return [tuple(sorted(MAGIC_BOARD.index(value) for value in triple))
+                for player in self.players.values()
+                for triple in winning_triples(player.squares)]
+
+    def outcome(self):
+        """Return the winning mark, zero for a draw, or None while playing."""
+        for mark, player in self.players.items():
+            if next(winning_triples(player.squares), None) is not None:
+                return mark
+        return None if any(isinstance(cell, int) for cell in self.magic_board) else 0
+
+    def play(self, move):
+        apply_move(self.magic_board, self.players[self.turn], move)
+        self.turn = -self.turn
+        return move
+
+    def undo(self, token):
+        self.turn = -self.turn
+        self.magic_board[token] = self.players[self.turn].squares.pop()
 
 
 def choose_ai_move(board, player, engine):
@@ -71,55 +90,71 @@ def choose_ai_move(board, player, engine):
     position = FifteenPosition(cells, 1 if player.sym == "X" else -1)
     # Search to terminal positions with no deadline: no heuristic fallback can
     # weaken the never-lose guarantee from a legal starting position.
-    result = engine.search(position, max(1, cells.count(0)))
+    return search_move(position, engine)
+
+
+def search_move(position, engine):
+    """Use full-depth search for all game interfaces."""
+    result = engine.search(position, max(1, position.board.count(0)))
     if result.move is None:
         raise ValueError("Cannot choose a move after the game is over.")
     return result.move
 
 
-def game(ai=False, human="X"):
-    if human not in ("X", "O"):
-        raise ValueError("human must be X or O")
-    engine = None
-    if ai:
+# Human-controlled marks for each mode. Labels belong to the UI.
+MODES = {
+    "human-human": (1, -1),
+    "human-x": (1,),
+    "human-o": (-1,),
+    "computer-computer": (),
+}
+
+
+class GameSession:
+    """Mode selection and turn progression shared by both interfaces."""
+
+    def __init__(self, mode="human-x"):
         from alpha_beta_engine import AlphaBetaEngine
-        engine = AlphaBetaEngine()
-        print(f"You are {human}. AI is {'O' if human == 'X' else 'X'}. X goes first.")
-    board = list(MAGIC_BOARD)
-    players = [Player("X"), Player("O")]
-    print("Choose positions:\n1 2 3\n4 5 6\n7 8 9")
-    print_board(board)
-    print("-----")
-    for turn in range(9):
-        player = players[turn % 2]
-        if ai and player.sym != human:
-            square = choose_ai_move(board, player, engine)
-            apply_move(board, player, square)
-            print(f"AI ({player.sym}) chooses position {square + 1}.")
-        else:
-            move(board, player)
-        print_board(board)
-        print("-----")
-        if isWinner(player):
-            print(f"Player {player.sym} wins!")
-            return player.sym
-    print("It's a tie!")
-    return None
+        self.engine = AlphaBetaEngine()
+        self.new_game(mode)
 
+    def new_game(self, mode):
+        from alpha_beta_engine import FifteenPosition
+        if mode not in MODES:
+            raise ValueError("Choose one of the four game modes.")
+        self.mode = mode
+        self.position = FifteenPosition()
+        self.last_move = None
+        self.history = []
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ai", action="store_true", help="play against the alpha-beta AI")
-    parser.add_argument("--human", choices=("X", "O"), default=None,
-                        help="your symbol in AI mode: X goes first (default: X)")
-    args = parse_version_args(parser)
-    if args.human is not None and not args.ai:
-        parser.error("--human requires --ai")
-    try:
-        game(ai=args.ai, human=args.human or "X")
-    except (EOFError, KeyboardInterrupt):
-        print("\nGame ended.")
+    @property
+    def over(self):
+        return self.position.outcome() is not None
+
+    @property
+    def computer_turn(self):
+        return not self.over and self.position.turn not in MODES[self.mode]
+
+    def play(self, square):
+        if self.over:
+            raise ValueError("This game is over. Start a new game.")
+        if self.computer_turn:
+            raise ValueError("Wait for the computer's move.")
+        if type(square) is not int:
+            raise ValueError("Choose an empty square.")
+        self._apply(square)
+
+    def computer_move(self):
+        if self.computer_turn:
+            self._apply(search_move(self.position, self.engine))
+
+    def _apply(self, square):
+        mark = "X" if self.position.turn == 1 else "O"
+        self.position.play(square)
+        self.last_move = square
+        self.history.append({"mark": mark, "square": square + 1})
 
 
 if __name__ == "__main__":
+    from ui import main
     main()

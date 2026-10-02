@@ -146,6 +146,10 @@ def main():
         turn += 1
 
 if __name__ == '__main__':
-    from version import parse_version_args
+    # Allow direct execution from the archived scripts directory.
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from ui import parse_version_args
     parse_version_args()
     main()

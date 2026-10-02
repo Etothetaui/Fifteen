@@ -10,7 +10,7 @@ The board stores this magic square internally:
 2 9 4
 ```
 
-Every winning row, column, or diagonal sums to **15**. Each player records the numbers behind their chosen squares; the game checks whether three of those numbers, including the latest move, sum to 15.
+Every winning row, column, or diagonal sums to **15**. Each player records the numbers behind their chosen squares; the game checks whether three of those numbers sum to 15.
 
 ## Run
 
@@ -33,9 +33,10 @@ as a file: the Python loader needs HTTP. The four modes are two humans, human X
 versus computer O, human O versus computer X, and two computers. Selecting a
 mode or pressing **New game** starts a new game, including during AI play.
 
-`ui.py` controls browser turns, status, and AI actions. Both the browser and
-AI adapter reuse `Player`, `apply_move`, and the sum-to-15 win rule from
-`fifteen.py`. The magic-square values stay internal; they are not shown in the UI.
+`fifteen.py` owns the shared rules, board state, modes, and turn progression.
+`ui.py` handles browser snapshots, status messages, and terminal input/output.
+Both interfaces use the same game session; the AI adapter inherits the shared
+state and reuses the original move handling and sum-to-15 win rule. The magic-square values stay internal; they are not shown in the UI.
 `web.js` renders snapshots and forwards input; `python-worker.js` runs Python
 and the existing engine through Pyodide 0.28.1 in a background worker. `web.css`
 contains presentation styles. An internet connection is required to download
@@ -80,19 +81,19 @@ and `--version` to display the current version. `--human` requires `--ai`.
 
 | File | Purpose |
 | --- | --- |
-| `fifteen.py` | Main terminal game: two humans or human versus alpha-beta AI. |
+| `fifteen.py` | Shared magic-square rules, state, and game sessions; terminal entry point. |
 | `index.html`, `web.css`, `web.js` | Browser page, styling, and input/rendering bridge. |
-| `ui.py` | Python browser-game controller for all four play modes. |
+| `ui.py` | Browser presentation and JSON interface; terminal prompts, printing, and arguments. |
 | `python-worker.js` | Loads Python and runs the controller in a background browser worker. |
-| `tictactoe.py` | Two-player variant organized into Game and Player classes. |
-| `fifteen_ai_experimental.py` | **Experimental:** computer opponent using minimax; the computer plays X and opens randomly. |
-| `meta_board.py` | Experimental recursive boards with configurable levels and navigation between subboards. |
-| `print_squares.py` | Standalone demonstration of flattening and printing nested square arrays. |
+| `outdated-experiments/tictactoe.py` | Two-player variant organized into Game and Player classes. |
+| `outdated-experiments/fifteen_ai_experimental.py` | **Experimental:** computer opponent using minimax; the computer plays X and opens randomly. |
+| `outdated-experiments/meta_board.py` | Experimental recursive boards with configurable levels and navigation between subboards. |
+| `outdated-experiments/print_squares.py` | Standalone demonstration of flattening and printing nested square arrays. |
 | `alpha_beta_engine.py` | Reusable alpha-beta search engine with a standard-game adapter and opening-move demonstration. |
-| `version.py` | Shared application version and command-line version reporting. |
-| `test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
-| `test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
-| `test_ui.py` | Browser-controller modes, restart, validation, and computer-play checks. |
+| `version.py` | Shared application version. |
+| `tests/test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
+| `tests/test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
+| `tests/test_ui.py` | Browser-controller modes, restart, validation, and computer-play checks. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
@@ -101,7 +102,7 @@ Run the terminal game scripts directly with Python, or use the web preview instr
 `alpha_beta_engine.py` searches through an adapter backed by the original
 magic-square board and players in `fifteen.py`. It has no separate row, column,
 or diagonal win rules. Winning highlights also come from sum-to-15 triples.
-The old experimental script remains separate. Run `python alpha_beta_engine.py` for an opening-move
+Archived scripts live in `outdated-experiments/` and are not loaded by the game. Run `python alpha_beta_engine.py` for an opening-move
 demonstration, or import it:
 
 ```python
@@ -154,14 +155,15 @@ exact release label requested for this correction. To display it without startin
 python fifteen.py --version
 ```
 
-The same flag works with `tictactoe.py`, `fifteen_ai_experimental.py`, and
-`meta_board.py`. For future versions, update only `version.py`; the game
+The same flag works with the archived `tictactoe.py`, `fifteen_ai_experimental.py`,
+and `meta_board.py` scripts in `outdated-experiments/`. For example, run
+`python outdated-experiments/tictactoe.py --version`. For future versions, update only `version.py`; the game
 commands read that shared value. Source filenames and the project directory
 do not include version numbers.
 
 This repository originated from the five scripts in `15gamePython` in [Etothetaui/dumb_stuff](https://github.com/Etothetaui/dumb_stuff/tree/main/15gamePython), as viewed at source commit `ab5d6b830ec072b7657c961aaf0e1dea39286da6`. The original `fifteen2.py` is now named `fifteen_ai_experimental.py` to identify its purpose and status.
 
-The main game rejects positions outside 1–9 and occupied squares. Older scripts
+The main game rejects positions outside 1–9 and occupied squares. Scripts in `outdated-experiments/`
 remain learning experiments: their input validation can accept zero or negative
 positions through Python's negative indexing. The old minimax variant is
 experimental and should not be treated as an unbeatable opponent. The

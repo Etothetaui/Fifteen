@@ -6,10 +6,10 @@ class UITests(unittest.TestCase):
     def test_every_reachable_board_uses_magic_square_results(self):
         from alpha_beta_engine import FifteenPosition
         from fifteen import MAGIC_BOARD
-        from test_alpha_beta_engine import reachable, outcome
+        from tests.test_alpha_beta_engine import reachable, outcome
         ui = GameUI()
         for cells, turn in reachable():
-            ui.position = FifteenPosition(cells, turn)
+            ui.session.position = FifteenPosition(cells, turn)
             state = ui.snapshot()
             expected = outcome(cells, turn)
             self.assertEqual(state['over'], expected is not None)
@@ -22,12 +22,12 @@ class UITests(unittest.TestCase):
         from fifteen import MAGIC_BOARD
         ui = GameUI()
         ui.play(0)
-        self.assertEqual(ui.position.players[1].squares, [6])
-        self.assertEqual(ui.position.magic_board, ['X', *MAGIC_BOARD[1:]])
-        before = {mark: player.squares.copy() for mark, player in ui.position.players.items()}
-        ui.engine.search(ui.position, 8)
-        self.assertEqual({mark: player.squares for mark, player in ui.position.players.items()}, before)
-        self.assertEqual(ui.position.magic_board, ['X', *MAGIC_BOARD[1:]])
+        self.assertEqual(ui.session.position.players[1].squares, [6])
+        self.assertEqual(ui.session.position.magic_board, ['X', *MAGIC_BOARD[1:]])
+        before = {mark: player.squares.copy() for mark, player in ui.session.position.players.items()}
+        ui.session.engine.search(ui.session.position, 8)
+        self.assertEqual({mark: player.squares for mark, player in ui.session.position.players.items()}, before)
+        self.assertEqual(ui.session.position.magic_board, ['X', *MAGIC_BOARD[1:]])
 
     def test_four_modes_and_restart(self):
         ui = GameUI()

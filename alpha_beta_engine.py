@@ -11,8 +11,7 @@ from math import inf
 from time import monotonic
 from typing import Hashable, Iterable, Protocol
 
-from version import __version__
-from fifteen import MAGIC_BOARD, Player, apply_move, winning_triples
+from fifteen import GameState
 
 
 class Position(Protocol):
@@ -161,54 +160,20 @@ class AlphaBetaEngine:
         return best_score, best_move
 
 
-class FifteenPosition:
-    """Adapter for the original Python magic-square game. Moves are zero-based cell indices.
-
-    board contains 0 (empty), 1 (X), or -1 (O); turn is 1 or -1.
-    Custom boards must be reachable legal positions. Callers own this invariant.
-    """
+class FifteenPosition(GameState):
+    """Search adapter inheriting the shared game's state and move operations."""
 
     _order = (4, 0, 2, 6, 8, 1, 3, 5, 7)
-
-    def __init__(self, board=None, turn=1):
-        cells = list(board) if board is not None else [0] * 9
-        if len(cells) != 9 or any(x not in (-1, 0, 1) for x in cells):
-            raise ValueError("board must contain nine values from -1, 0, 1")
-        if turn not in (-1, 1):
-            raise ValueError("turn must be 1 (X) or -1 (O)")
-        self.magic_board = list(MAGIC_BOARD)
-        self.players = {1: Player("X"), -1: Player("O")}
-        for square, mark in enumerate(cells):
-            if mark:
-                apply_move(self.magic_board, self.players[mark], square)
-        self.turn = turn
-
-    @property
-    def board(self):
-        """Presentation/cache encoding; game state retains the magic numbers."""
-        return [0 if isinstance(cell, int) else 1 if cell == "X" else -1
-                for cell in self.magic_board]
 
     def key(self):
         return tuple(self.board), self.turn
 
-    def winning_squares(self):
-        """Map sum-to-15 triples to display positions without geometric rules."""
-        triples = [tuple(sorted(MAGIC_BOARD.index(value) for value in triple))
-                   for player in self.players.values()
-                   for triple in winning_triples(player.squares)]
-        # Keep the existing highlight order if a final move completes two wins.
-        return min(triples, key=lambda cells: (
-            0 if cells[1] - cells[0] == 1 else
-            1 if cells[1] - cells[0] == 3 else 2, cells), default=())
-
     def terminal_score(self):
+        outcome = self.outcome()
+        if outcome is None:
+            return None
         empty = sum(isinstance(cell, int) for cell in self.magic_board)
-        for mark, player in self.players.items():
-            if next(winning_triples(player.squares), None) is not None:
-                # Scores remain position-relative so cached results are valid.
-                return mark * self.turn * (1 + empty)
-        return None if empty else 0
+        return outcome * self.turn * (1 + empty)
 
     def evaluate(self):
         # Neutral horizon estimate. Use all remaining plies for optimal play.
@@ -217,19 +182,7 @@ class FifteenPosition:
     def legal_moves(self):
         return (i for i in self._order if isinstance(self.magic_board[i], int))
 
-    def play(self, move):
-        apply_move(self.magic_board, self.players[self.turn], move)
-        self.turn = -self.turn
-        return move
-
-    def undo(self, token):
-        self.turn = -self.turn
-        self.magic_board[token] = self.players[self.turn].squares.pop()
-
 
 if __name__ == "__main__":
-    from version import parse_version_args
-    parse_version_args()
-    result = AlphaBetaEngine().search(FifteenPosition(), max_depth=9)
-    print(f"Best opening position: {result.move + 1}; score: {result.score}")
-    print(f"Nodes: {result.nodes}; cutoffs: {result.cutoffs}; cache hits: {result.cache_hits}")
+    from ui import engine_demo
+    engine_demo()

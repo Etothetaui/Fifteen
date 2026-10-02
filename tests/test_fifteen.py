@@ -9,8 +9,9 @@ import unittest
 from unittest.mock import patch
 
 from alpha_beta_engine import AlphaBetaEngine
-from fifteen import MAGIC_BOARD, Player, apply_move, choose_ai_move, game, move
-from test_alpha_beta_engine import outcome, reachable, reference
+from fifteen import MAGIC_BOARD, Player, apply_move, choose_ai_move, GameSession
+from ui import game, move
+from tests.test_alpha_beta_engine import outcome, reachable, reference
 from version import __version__
 
 
@@ -34,25 +35,26 @@ class GameTests(unittest.TestCase):
     def test_perfect_human_draws_with_either_symbol(self):
         human_engine = AlphaBetaEngine()
 
-        def perfect_human(board, player):
-            square = choose_ai_move(board, player, human_engine)
-            apply_move(board, player, square)
+        def perfect_human(session):
+            square = human_engine.search(session.position, session.position.board.count(0)).move
+            session.play(square)
             return square
 
         for symbol in ('X', 'O'):
             output = io.StringIO()
-            with patch('fifteen.move', side_effect=perfect_human), contextlib.redirect_stdout(output):
+            with patch('ui.move', side_effect=perfect_human), contextlib.redirect_stdout(output):
                 self.assertIsNone(game(ai=True, human=symbol))
             self.assertIn("It's a tie!", output.getvalue())
             self.assertIn('AI (', output.getvalue())
 
     def test_input_retries_without_corrupting_state(self):
-        board = list(MAGIC_BOARD)
-        board[0] = 'O'
-        player = Player('X')
+        session = GameSession('human-human')
+        session.play(0)
+        board = session.position.magic_board
+        player = session.position.players[-1]
         with patch('builtins.input', side_effect=['bad', '0', '-1', '10', '1', '2']), contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(move(board, player), 1)
-        self.assertEqual(board, ['O', 'X', *MAGIC_BOARD[2:]])
+            self.assertEqual(move(session), 1)
+        self.assertEqual(board, ['X', 'O', *MAGIC_BOARD[2:]])
         self.assertEqual(player.squares, [MAGIC_BOARD[1]])
 
     def run_cli(self, *args, text=''):

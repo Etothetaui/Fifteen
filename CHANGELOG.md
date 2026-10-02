@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.5-dev
+
+- Separate shared game rules, state, and sessions from browser and terminal UI.
+- Reuse the shared game state in the alpha-beta adapter; keep winning-highlight
+  ordering in the UI. Preserve the original magic-square rules and web interface.
+- Move older scripts into `outdated-experiments/` and automated checks into `tests/`.
+- Keep local agent instructions out of Git tracking.
+
 ## 0.0.4
 
 - Replace separate geometric win checks with the original Python magic-square
