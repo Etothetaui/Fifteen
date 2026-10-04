@@ -9,9 +9,9 @@ async function initialize() {
     if (!response.ok) throw new Error(`Could not load ${name}`);
     py.FS.writeFile(name, await response.text());
   }
-  py.runPython('from ui import dispatch');
+  py.runPython('from ui import dispatch, UI_LEVELS\nfrom fifteen import DEFAULT_LEVELS');
   dispatch = py.globals.get('dispatch');
-  self.postMessage({ready: true});
+  self.postMessage({ready: true, defaultLevels: py.globals.get('DEFAULT_LEVELS'), levels: JSON.parse(py.runPython('import json; json.dumps(UI_LEVELS)'))});
 }
 const ready = initialize();
 ready.catch(error => self.postMessage({fatal: true, error: String(error)}));

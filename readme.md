@@ -1,6 +1,9 @@
 # Fifteen
 
-Tic-tac-toe for the browser and terminal, with a Python alpha-beta engine.
+Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
+
+Version `0.1.0-dev` adds recursive boards with Levels 1, 2, and 3 in the
+browser and terminal, using the shared Python rules and search engine.
 
 The board stores this magic square internally:
 
@@ -11,6 +14,43 @@ The board stores this magic square internally:
 ```
 
 Every winning row, column, or diagonal sums to **15**. Each player records the numbers behind their chosen squares; the game checks whether three of those numbers sum to 15.
+
+## Recursive boards
+
+The UI offers **Level 1** (the original game), **Level 2** (nine small boards
+within one parent), and **Level 3** (729 squares across three layers).
+All three levels show the complete playable board. A single sidebar holds the
+X and O Human/Computer toggles, level buttons, New game, status, and move history.
+The two toggles provide all four player combinations. Changing a player or level
+starts a new game. On narrow screens, the controls sit above the board.
+The Python model and AI adapter accept any positive `levels` value; practical
+depth is limited by resources and Python's recursion limit.
+
+Each board is a recursive `Board` object. Empty descendants are created on the
+first move into them. Every level uses the same original magic-square rule:
+winning a child credits its hidden number to the winner in the parent. A drawn
+child closes its slot without crediting either player. Wins and draws propagate
+upward, and the game ends when the root board is won or drawn.
+
+A move is a path from the outer board to a leaf square. Drop the first position
+to find the next player's destination: at two levels, playing board 3, square 7
+sends the opponent to board 7. At three levels, `[3, 7, 2]` directs the next move
+to `[7, 2]`. These examples use display positions 1–9; Python paths use 0–8.
+If a destination is finished, freedom expands only to its nearest unfinished
+parent. Finished boards are never playable. The browser highlights the allowed
+boards and disables squares outside them, using permissions supplied by Python.
+
+`DEFAULT_LEVELS` in `fifteen.py` is the shared default. `UI_LEVELS` in `ui.py`
+limits the currently exposed choices without limiting the game model. For
+programmatic play at another depth:
+
+```python
+from fifteen import GameSession
+
+session = GameSession("human-human", levels=3)
+session.play((2, 6, 1))
+assert session.position.forced == (6, 1)
+```
 
 ## Run
 
@@ -30,8 +70,7 @@ python -m http.server 8000 --bind 127.0.0.1
 
 Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
 as a file: the Python loader needs HTTP. The four modes are two humans, human X
-versus computer O, human O versus computer X, and two computers. Selecting a
-mode or pressing **New game** starts a new game, including during AI play.
+versus computer O, human O versus computer X, and two computers. Changing either player toggle or pressing **New game** starts a new game, including during AI play.
 
 `fifteen.py` owns the shared rules, board state, modes, and turn progression.
 `ui.py` handles browser snapshots, status messages, and terminal input/output.
@@ -71,9 +110,16 @@ These are position numbers, not the internal magic-square values. Get three mark
 ```sh
 python fifteen.py --ai            # You are X and go first.
 python fifteen.py --ai --human O  # AI is X and goes first.
+python fifteen.py --levels 2      # Two humans on a two-level board.
 ```
 
-The AI uses full-depth alpha-beta search and prefers faster wins. There is no random opening or time limit.
+At Level 1, the AI uses full-depth alpha-beta search and prefers faster wins.
+At higher levels, the same engine uses iterative deepening with a cooperative
+0.5-second deadline per move (`MULTILEVEL_AI_SECONDS` in `fifteen.py`). Its current
+horizon evaluation is neutral; larger-board play is legal but not guaranteed
+optimal. The engine remains replaceable through the existing `Position` protocol.
+For terminal Level 2, enter the board and square separated by a space, such as
+`3 7`. All four browser modes work at all three exposed levels.
 `python fifteen.py` still starts the two-human mode. Use `--help` for options
 and `--version` to display the current version. `--human` requires `--ai`.
 
@@ -94,6 +140,7 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | `tests/test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
 | `tests/test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
 | `tests/test_ui.py` | Browser-controller modes, restart, validation, and computer-play checks. |
+| `tests/test_recursive.py` | Recursive outcomes, routing, undo, AI, level choices, and terminal paths. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
@@ -114,8 +161,9 @@ result = engine.search(position, max_depth=9)
 print(result.move + 1)  # Engine moves use indices 0–8; display positions 1–9.
 ```
 
-For an existing nonterminal standard board, search `position.board.count(0)`
-plies to obtain optimal play. The adapter prefers faster wins and delays forced
+For a nonterminal Level 1 board, search `position.remaining` plies for optimal
+play. At greater depths, `remaining` is an upper bound that includes unused
+squares inside finished boards; a deadline is needed for interactive play. The adapter prefers faster wins and delays forced
 losses. It assumes supplied boards are legal, reachable positions.
 
 The engine uses negamax alpha-beta, preferred move order from the game adapter,
@@ -127,8 +175,7 @@ search calls. Disable caching with `cache_size=0` when its overhead is unwanted.
 Optional `iterative=True` searches progressively deeper. With `time_limit=1.0`,
 it returns the last completed depth on timeout; if none completed, it returns a
 legal fallback with `score=None`. Time limits are cooperative. Limited-depth
-results are heuristic, not guaranteed optimal. The standard adapter's horizon
-estimate is neutral; full-depth search is recommended for this game.
+results are heuristic, not guaranteed optimal. The adapter's horizon estimate is neutral; full-depth search is used for Level 1.
 
 Other games can implement the documented `Position` protocol without changing
 the engine. Keys must include side to move and any rule-relevant history.

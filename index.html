@@ -5,32 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css">
-  <script src="web.js" defer></script>
+  <link rel="stylesheet" href="web.css?layout=sidebar">
+  <script src="web.js?layout=sidebar" defer></script>
 </head>
 <body>
-  <header><a class="brand" href="./">fifteen</a><span id="version">Development preview</span></header>
   <main>
-    <section class="intro">
-      <h1>Fifteen</h1>
-      <p class="lede">Get three in a row. X goes first.</p>
-      <fieldset id="modes" disabled>
-        <legend>Game mode</legend>
-        <label class="mode"><input type="radio" name="mode" value="human-human"><span class="mode-icon">X O</span><span><strong>Two players</strong><small>Human vs human</small></span></label>
-        <label class="mode"><input type="radio" name="mode" value="human-x" checked><span class="mode-icon">X</span><span><strong>You as X</strong><small>Human X vs computer O</small></span></label>
-        <label class="mode"><input type="radio" name="mode" value="human-o"><span class="mode-icon">O</span><span><strong>You as O</strong><small>Computer X vs human O</small></span></label>
-        <label class="mode"><input type="radio" name="mode" value="computer-computer"><span class="mode-icon">↔</span><span><strong>Watch computers</strong><small>Computer vs computer</small></span></label>
+    <aside class="sidebar" aria-label="Game controls">
+      <header><a class="brand" href="./">fifteen</a><span id="version">Development preview</span></header>
+      <fieldset id="modes" disabled aria-label="Players">
+        <div class="player" id="player-x"><span class="player-symbol">X</span><button type="button" role="switch" aria-label="X computer" aria-checked="false"><span class="toggle-name">Human</span><span class="toggle-track" aria-hidden="true"><span></span></span></button></div>
+        <div class="player" id="player-o"><span class="player-symbol">O</span><button type="button" role="switch" aria-label="O computer" aria-checked="true"><span class="toggle-name">Computer</span><span class="toggle-track" aria-hidden="true"><span></span></span></button></div>
       </fieldset>
-      <p class="mode-note">Changing modes starts a new game.</p>
-    </section>
-    <section class="play-area" aria-label="Game">
-      <div class="game-top"><span class="eyebrow">Board</span><span id="move-count">MOVE 00 / 09</span></div>
-      <div class="players"><div id="player-x" class="player active"><b>X</b><span>Human</span></div><span class="versus">VS</span><div id="player-o" class="player"><b>O</b><span>Computer</span></div></div>
+      <fieldset id="levels" disabled aria-describedby="levels-note"><legend>Levels</legend><div class="level-options"></div></fieldset>
+      <button id="new-game" class="new-game" disabled>New game</button>
       <div class="status-wrap"><h2 id="status" role="status" aria-live="polite">Loading…</h2><p id="substatus">Downloading the Python runtime.</p></div>
-      <div id="board" class="board" role="group" aria-label="Tic-tac-toe board"></div>
-      <button id="new-game" class="new-game" disabled>↻ <span>New game</span><span class="button-arrow">↗</span></button>
-      <button id="retry" hidden>Retry loading</button>
+      <div class="game-top"><span id="board-title">Board</span><span id="move-count">MOVE 00 / 09</span></div>
       <div class="moves"><span>Moves</span><p id="history">No moves yet.</p></div>
+      <button id="retry" hidden>Retry loading</button>
+      <p id="levels-note" class="mode-note">Changing players or levels starts a new game.</p>
+    </aside>
+    <section class="play-area" aria-label="Game board">
+      <div class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board"></div></div>
     </section>
   </main>
   <noscript>This game needs JavaScript enabled to run Python in your browser.</noscript>

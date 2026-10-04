@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-dev
+
+- Add recursive board objects with shared magic-square rules at every level.
+- Propagate won/drawn children and route moves to the nearest unfinished parent.
+- Support arbitrary positive depths in the model and AI adapter, while exposing
+  Levels 1, 2, and 3 in the browser and terminal controls.
+- Reuse alpha-beta search with reversible recursive moves and lazy move generation.
+  Keep exact Level 1 search; use timed iterative search for larger games.
+- Add nested-board rendering, legal-region highlighting, and recursive tests.
+- Use the selected single-sidebar layout with independent X/O player toggles
+  and level buttons. Show the full Level 3 board without focus navigation.
+- Preserve the original cream, pale sage, and dark green palette in the new layout.
+
 ## 0.0.5-dev
 
 - Separate shared game rules, state, and sessions from browser and terminal UI.

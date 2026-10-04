@@ -6,6 +6,7 @@ No game objects are copied during search. Implement Position for other games.
 """
 
 from collections import OrderedDict
+from itertools import chain
 from dataclasses import dataclass
 from math import inf
 from time import monotonic
@@ -130,13 +131,12 @@ class AlphaBetaEngine:
                 self._cutoffs += 1
                 return entry.score, entry.move
 
-        moves = list(position.legal_moves())
-        if not moves:
-            raise ValueError("Nonterminal position has no legal moves")
-        if entry is not None and entry.move in moves:
-            moves.remove(entry.move)
-            moves.insert(0, entry.move)
-        best_score, best_move = -inf, moves[0]
+        # Stream moves: the initial recursive board can have 9**n choices.
+        # Entries have the same complete position key, so their move is legal.
+        moves = position.legal_moves()
+        if entry is not None:
+            moves = chain((entry.move,), (move for move in moves if move != entry.move))
+        best_score, best_move = -inf, None
         for move in moves:
             token = position.play(move)
             try:
@@ -151,6 +151,8 @@ class AlphaBetaEngine:
                 self._cutoffs += 1
                 break
 
+        if best_move is None:
+            raise ValueError("Nonterminal position has no legal moves")
         if self.cache_size:
             bound = ("upper" if best_score <= original_alpha else
                      "lower" if best_score >= original_beta else "exact")
@@ -166,21 +168,22 @@ class FifteenPosition(GameState):
     _order = (4, 0, 2, 6, 8, 1, 3, 5, 7)
 
     def key(self):
-        return tuple(self.board), self.turn
+        if self.levels == 1:
+            return tuple(self.board), self.turn
+        return self.levels, self.turn, self.forced, self.root.key()
 
     def terminal_score(self):
         outcome = self.outcome()
         if outcome is None:
             return None
-        empty = sum(isinstance(cell, int) for cell in self.magic_board)
-        return outcome * self.turn * (1 + empty)
+        return outcome * self.turn * (1 + self.remaining)
 
     def evaluate(self):
         # Neutral horizon estimate. Use all remaining plies for optimal play.
         return 0
 
     def legal_moves(self):
-        return (i for i in self._order if isinstance(self.magic_board[i], int))
+        return super().legal_moves(self._order)
 
 
 if __name__ == "__main__":
