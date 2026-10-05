@@ -59,6 +59,8 @@ class Board:
         self.players = {1: Player("X"), -1: Player("O")}
         self.children = {}
         self.result = None
+        # Consumers can invalidate derived analysis after direct Board edits.
+        self.revision = 0
 
     @property
     def board(self):
@@ -100,7 +102,10 @@ class Board:
                 apply_move(self.magic_board, self.players[credit], index)
             elif child.result == 0:
                 self.magic_board[index] = "="
-        self.refresh_result()
+        # An unfinished descendant leaves this board's nine slots unchanged.
+        if credit is not None or self.magic_board[index] != previous:
+            self.refresh_result()
+        self.revision += 1
         return index, previous, previous_result, credit, child_token, created
 
     def undo(self, token):
@@ -113,6 +118,7 @@ class Board:
             self.players[credit].squares.pop()
         self.magic_board[index] = previous
         self.result = previous_result
+        self.revision += 1
 
     def key(self):
         return (tuple(self.board), tuple((i, child.key())
@@ -217,23 +223,27 @@ class GameState:
             node = node.children.get(index)
         return prefix
 
-    def legal_moves(self, order=tuple(range(9))):
+    def legal_moves(self, order=tuple(range(9)), *, rank=None):
+        """Stream legal paths; an optional rank callback changes ordering only."""
         if self.outcome() is not None:
             return
 
         def descend(node, levels, prefix):
             if node is None:
-                for suffix in empty_paths(levels, order):
-                    yield prefix + suffix
+                if rank is None:
+                    for suffix in empty_paths(levels, order):
+                        yield prefix + suffix
+                    return
+            elif node.result is not None:
                 return
-            if node.result is not None:
-                return
-            for index in order:
-                if isinstance(node.magic_board[index], int):
+            indices = rank(node, prefix, order) if rank else order
+            for index in indices:
+                if node is None or isinstance(node.magic_board[index], int):
                     if levels == 1:
                         yield prefix + (index,)
                     else:
-                        yield from descend(node.children.get(index), levels - 1, prefix + (index,))
+                        yield from descend(node.children.get(index) if node else None,
+                                           levels - 1, prefix + (index,))
 
         node = self.board_at(self.forced)
         for path in descend(node, self.levels - len(self.forced), self.forced):

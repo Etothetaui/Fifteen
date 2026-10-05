@@ -8,11 +8,12 @@ No game objects are copied during search. Implement Position for other games.
 from collections import OrderedDict
 from itertools import chain
 from dataclasses import dataclass
-from math import inf
+from math import inf, nextafter
 from time import monotonic
 from typing import Hashable, Iterable, Protocol
 
 from fifteen import GameState
+from ai_evaluation import EVALUATION_VERSION, WIN_SCORE, RecursiveAnalysis
 
 
 class Position(Protocol):
@@ -60,16 +61,26 @@ class _Timeout(Exception):
 class AlphaBetaEngine:
     """Reusable, single-search-at-a-time engine with bounded cache memory.
 
-    Set cache_size=0 to disable caching. The table is cleared for each search,
-    then shared across iterative-deepening passes. Cached cutoff scores are
-    bounds, not exact values. Different-depth entries only guide move ordering.
+    Set cache_size=0 to disable caching. Positions may opt into reuse across
+    searches through cache_context(); its value must identify rule/evaluation
+    semantics. Other adapters start with an empty table each search. Bounds
+    require matching depth and extension budget; other entries only order moves.
     """
 
-    def __init__(self, cache_size: int = 100_000):
+    def __init__(self, cache_size: int = 100_000, *, pvs=True, threat_extensions=2):
         if cache_size < 0:
             raise ValueError("cache_size must be nonnegative")
         self.cache_size = cache_size
+        if type(threat_extensions) is not int or threat_extensions < 0:
+            raise ValueError("threat_extensions must be a nonnegative integer")
+        self.pvs = pvs
+        self.threat_extensions = threat_extensions
         self._table = OrderedDict()
+        self._context = None
+
+    def clear_cache(self):
+        self._table.clear()
+        self._context = None
 
     def search(self, position: Position, max_depth: int, *,
                iterative: bool = False, time_limit: float | None = None) -> SearchResult:
@@ -80,12 +91,16 @@ class AlphaBetaEngine:
         Before any depth completes, a timeout returns the first legal move and
         score=None. Time limits are cooperative, checked between nodes; slow
         game callbacks can exceed them. A deadline does not imply optimality.
+
         """
         if max_depth < 1:
             raise ValueError("max_depth must be at least 1")
         if time_limit is not None and time_limit < 0:
             raise ValueError("time_limit must be nonnegative")
-        self._table.clear()
+        context = getattr(position, 'cache_context', lambda: None)()
+        if context is None or context != self._context:
+            self.clear_cache()
+        self._context = context
         self._nodes = self._cutoffs = self._hits = 0
         self._deadline = None if time_limit is None else monotonic() + time_limit
         terminal = position.terminal_score()
@@ -98,7 +113,8 @@ class AlphaBetaEngine:
         depths = range(1, max_depth + 1) if iterative else (max_depth,)
         for depth in depths:
             try:
-                new_score, new_move = self._search(position, depth, -inf, inf)
+                new_score, new_move = self._search(position, depth, -inf, inf,
+                                                  self.threat_extensions)
             except _Timeout:
                 timed_out = True
                 break
@@ -106,7 +122,7 @@ class AlphaBetaEngine:
         return SearchResult(move, score, completed, self._nodes,
                             self._cutoffs, self._hits, timed_out)
 
-    def _search(self, position, depth, alpha, beta):
+    def _search(self, position, depth, alpha, beta, extensions):
         if self._deadline is not None and monotonic() >= self._deadline:
             raise _Timeout
         self._nodes += 1
@@ -114,10 +130,15 @@ class AlphaBetaEngine:
         if terminal is not None:
             return terminal, None
         if depth == 0:
-            return position.evaluate(), None
+            if extensions and getattr(position, 'is_tactical', lambda: False)():
+                # Search every legal reply: there is no legal 'stand pat' or
+                # pass in Fifteen. Bound extensions along each branch.
+                depth, extensions = 1, extensions - 1
+            else:
+                return position.evaluate(), None
 
         original_alpha, original_beta = alpha, beta
-        key = position.key() if self.cache_size else None
+        key = (position.key(), extensions) if self.cache_size else None
         entry = self._table.get(key) if self.cache_size else None
         if entry is not None and entry.depth == depth:
             self._hits += 1
@@ -140,8 +161,18 @@ class AlphaBetaEngine:
         for move in moves:
             token = position.play(move)
             try:
-                child_score, _ = self._search(position, depth - 1, -beta, -alpha)
-                score = -child_score
+                if self.pvs and best_move is not None and alpha != -inf:
+                    # Adjacent floating-point bounds also support adapters
+                    # whose scores are not integers. Re-search improvements.
+                    scout_beta = nextafter(alpha, inf)
+                    child = self._search(position, depth - 1, -scout_beta, -alpha, extensions)
+                    score = -child[0]
+                    if alpha < score < beta:
+                        child = self._search(position, depth - 1, -beta, -alpha, extensions)
+                        score = -child[0]
+                else:
+                    child = self._search(position, depth - 1, -beta, -alpha, extensions)
+                    score = -child[0]
             finally:
                 position.undo(token)
             if score > best_score:
@@ -167,23 +198,60 @@ class FifteenPosition(GameState):
 
     _order = (4, 0, 2, 6, 8, 1, 3, 5, 7)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._analysis = RecursiveAnalysis(self)
+
+    def cache_context(self):
+        return type(self), EVALUATION_VERSION
+
     def key(self):
         if self.levels == 1:
             return tuple(self.board), self.turn
-        return self.levels, self.turn, self.forced, self.root.key()
+        self._analysis.ensure_current()
+        return self.levels, self.turn, self.forced, self.ply, self._analysis.summaries[()].key
+
+    def play(self, move):
+        if self.levels == 1:
+            return super().play(move)
+        path = self.move_path(move)
+        self._analysis.ensure_current()
+        token = super().play(move)
+        try:
+            previous = self._analysis.update(path)
+        except BaseException:
+            super().undo(token)
+            self._analysis.revision = self.root.revision
+            raise
+        return token, previous
+
+    def undo(self, token):
+        if self.levels == 1:
+            return super().undo(token)
+        game_token, previous = token
+        super().undo(game_token)
+        self._analysis.restore(previous)
 
     def terminal_score(self):
         outcome = self.outcome()
         if outcome is None:
             return None
-        return outcome * self.turn * (1 + self.remaining)
+        # Preserve Level 1 scores. Recursive wins must dominate every heuristic.
+        base = 1 if self.levels == 1 else WIN_SCORE
+        return outcome * self.turn * (base + self.remaining)
 
     def evaluate(self):
-        # Neutral horizon estimate. Use all remaining plies for optimal play.
-        return 0
+        # Level 1 always uses exact full-depth search in the game.
+        return 0 if self.levels == 1 else self._analysis.evaluate()
 
     def legal_moves(self):
-        return super().legal_moves(self._order)
+        if self.levels == 1:
+            return super().legal_moves(self._order)
+        self._analysis.ensure_current()
+        return super().legal_moves(self._order, rank=self._analysis.rank)
+
+    def is_tactical(self):
+        return self.levels > 1 and self._analysis.is_tactical()
 
 
 if __name__ == "__main__":

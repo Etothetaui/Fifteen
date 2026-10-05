@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.1-dev
+
+- Add recursive position evaluation and tactical/destination-aware move ordering.
+- Keep deterministic best-score selection; discard the weaker variety experiment.
+- Update analysis and exact cached-hash tree keys only along the changed branch;
+  restore them with move undo, including on timeouts and errors.
+- Reuse compatible bounded search-cache entries across turns.
+- Add principal variation search and at most two extra plies for playable threats,
+  preserving all legal replies and exact Level 1 play.
+- Load the shared evaluation module in the Python browser worker; preserve the UI.
+- Add reference-search, incremental-state, and cache-safety tests plus a repeatable
+  equal-time match and profiling benchmark.
+
 ## 0.1.0-dev
 
 - Add recursive board objects with shared magic-square rules at every level.

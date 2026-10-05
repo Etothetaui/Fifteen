@@ -2,8 +2,9 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.1.0-dev` adds recursive boards with Levels 1, 2, and 3 in the
-browser and terminal, using the shared Python rules and search engine.
+Version `0.1.1-dev` improves the deterministic AI with recursive evaluation,
+tactical move ordering, principal variation search, and reusable search caches.
+The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
 
 The board stores this magic square internally:
 
@@ -115,9 +116,11 @@ python fifteen.py --levels 2      # Two humans on a two-level board.
 
 At Level 1, the AI uses full-depth alpha-beta search and prefers faster wins.
 At higher levels, the same engine uses iterative deepening with a cooperative
-0.5-second deadline per move (`MULTILEVEL_AI_SECONDS` in `fifteen.py`). Its current
-horizon evaluation is neutral; larger-board play is legal but not guaranteed
-optimal. The engine remains replaceable through the existing `Position` protocol.
+0.5-second deadline per move (`MULTILEVEL_AI_SECONDS` in `fifteen.py`).
+Move selection uses the best search score, with no randomized score margin.
+The AI evaluates recursive threats and board importance,
+including the destination of the next turn. Larger-board play remains heuristic,
+not guaranteed optimal. The engine remains replaceable through the existing `Position` protocol.
 For terminal Level 2, enter the board and square separated by a space, such as
 `3 7`. All four browser modes work at all three exposed levels.
 `python fifteen.py` still starts the two-human mode. Use `--help` for options
@@ -135,12 +138,15 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | `outdated-experiments/fifteen_ai_experimental.py` | **Experimental:** computer opponent using minimax; the computer plays X and opens randomly. |
 | `outdated-experiments/meta_board.py` | Experimental recursive boards with configurable levels and navigation between subboards. |
 | `outdated-experiments/print_squares.py` | Standalone demonstration of flattening and printing nested square arrays. |
-| `alpha_beta_engine.py` | Reusable alpha-beta search engine with a standard-game adapter and opening-move demonstration. |
+| `alpha_beta_engine.py` | Reusable alpha-beta/PVS search and the Fifteen adapter. |
+| `ai_evaluation.py` | Recursive evaluation, move ranking, and reversible analysis caches derived from the shared rules. |
 | `version.py` | Shared application version. |
 | `tests/test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
 | `tests/test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
 | `tests/test_ui.py` | Browser-controller modes, restart, validation, and computer-play checks. |
 | `tests/test_recursive.py` | Recursive outcomes, routing, undo, AI, level choices, and terminal paths. |
+| `tests/test_search_improvements.py` | Reference minimax comparisons, tactical choices, incremental analysis, cache isolation, and interruption safety. |
+| `benchmarks/ai_benchmark.py` | Equal-time matches and profiling against a local Git revision. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
@@ -164,24 +170,64 @@ print(result.move + 1)  # Engine moves use indices 0–8; display positions 1–
 For a nonterminal Level 1 board, search `position.remaining` plies for optimal
 play. At greater depths, `remaining` is an upper bound that includes unused
 squares inside finished boards; a deadline is needed for interactive play. The adapter prefers faster wins and delays forced
-losses. It assumes supplied boards are legal, reachable positions.
+losses.
+The adapter assumes supplied boards are legal, reachable positions.
 
-The engine uses negamax alpha-beta, preferred move order from the game adapter,
-cached-best-move ordering, and a bounded transposition table that distinguishes
-exact scores from bounds. It makes and undoes moves instead of copying game
-objects. Cache entries are shared between iterative passes and cleared between
-search calls. Disable caching with `cache_size=0` when its overhead is unwanted.
+The engine uses negamax alpha-beta with principal variation search (PVS).
+After the first move, PVS initially checks whether later moves improve the
+current score; improvements inside the search window receive a full re-search.
+Set `pvs=False` on `AlphaBetaEngine` to compare plain alpha-beta.
+
+For recursive games, `ai_evaluation.py` scores open sum-to-15 combinations,
+immediate completion squares, forks, won children, and the directed region.
+Child progress has less weight than its parent's result. All terminal wins
+outrank heuristic scores. Move ordering prioritizes the cached best move,
+local wins, threats, and destination quality; it never removes legal moves.
+Only the moved leaf and its ancestors receive updated analysis. Immutable tree
+keys cache their hashes but retain exact equality checks, so hash collisions
+cannot silently merge positions. Direct edits through `position.root.play`
+invalidate analysis; use `position.play`/`undo` for normal play and search.
+
+A bounded transposition table retains compatible Fifteen results across turns.
+Scores and bounds require the same search depth and remaining extension budget;
+other entries only guide move ordering. `cache_size=0` disables it, and
+`engine.clear_cache()` clears it explicitly. Keys include the side to move,
+directed region, depth of the recursive board, and move count. Different game
+adapters clear the table between searches unless they supply `cache_context()`
+and guarantee stable rules, evaluation, and position-relative scores.
+
+The default `threat_extensions=2` allows at most two additional plies per branch
+when the usual horizon lands on an immediate threat in a playable leaf board.
+Every legal reply is still searched; there is no assumed pass or forced-block
+filter. Set `threat_extensions=0` for fixed-depth comparisons. The generic
+engine uses the optional `is_tactical()` adapter hook to identify these positions.
+Level 1 keeps its original scores and exact full-depth search without extensions.
 
 Optional `iterative=True` searches progressively deeper. With `time_limit=1.0`,
 it returns the last completed depth on timeout; if none completed, it returns a
-legal fallback with `score=None`. Time limits are cooperative. Limited-depth
-results are heuristic, not guaranteed optimal. The adapter's horizon estimate is neutral; full-depth search is used for Level 1.
+legal fallback with `score=None`. Deadlines are cooperative: a single callback
+or scheduling delay may overshoot them. All interrupted moves and analysis
+updates are undone. A time limit does not imply optimality.
 
 Other games can implement the documented `Position` protocol without changing
 the engine. Keys must include side to move and any rule-relevant history.
-The engine assumes alternating turns, zero-sum scores, and finite search depth;
-it is not thread-safe. There is no universally fastest configuration. PVS and
-additional search heuristics are deferred until measurements justify them.
+The engine assumes alternating turns, zero-sum finite scores, and finite search
+depth; it is not thread-safe.
+
+To reproduce short equal-time matches and a CPU profile against the published
+`0.1.0-dev` engine (the commit must exist locally):
+
+```sh
+python benchmarks/ai_benchmark.py --baseline-ref c04573f --seconds 0.05 --pairs 2
+```
+
+Each opening is played with both sides swapped at Levels 2 and 3. The benchmark
+imports only the earlier engine; both versions use the current shared rules.
+Use `--seconds 0.5` for the game's normal time budget, or `--pairs 0` for search
+measurements without matches. Add `--ablations` to compare PVS, tactical ordering,
+and cached tree keys at equal depth with identical evaluation scores.
+Small samples are regression checks, not ratings;
+node throughput and playing strength are separate measurements.
 
 Run all engine and game checks with `python -m unittest discover -v`.
 
