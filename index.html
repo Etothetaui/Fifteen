@@ -13,8 +13,8 @@
     <aside class="sidebar" aria-label="Game controls">
       <header><a class="brand" href="./">fifteen</a><span id="version">Development preview</span></header>
       <fieldset id="modes" disabled aria-label="Players">
-        <div class="player" id="player-x"><span class="player-symbol">X</span><button type="button" role="switch" aria-label="X computer" aria-checked="false"><span class="toggle-name">Human</span><span class="toggle-track" aria-hidden="true"><span></span></span></button></div>
-        <div class="player" id="player-o"><span class="player-symbol">O</span><button type="button" role="switch" aria-label="O computer" aria-checked="true"><span class="toggle-name">Computer</span><span class="toggle-track" aria-hidden="true"><span></span></span></button></div>
+        <div class="player" id="player-x"><span class="player-symbol">X</span><div class="player-options" role="group" aria-label="X player"><button type="button" data-controller="human" aria-pressed="true">Human</button><button type="button" data-controller="computer" aria-pressed="false">Computer</button><button type="button" data-controller="experimental" aria-pressed="false">Experimental</button></div></div>
+        <div class="player" id="player-o"><span class="player-symbol">O</span><div class="player-options" role="group" aria-label="O player"><button type="button" data-controller="human" aria-pressed="false">Human</button><button type="button" data-controller="computer" aria-pressed="true">Computer</button><button type="button" data-controller="experimental" aria-pressed="false">Experimental</button></div></div>
       </fieldset>
       <fieldset id="levels" disabled aria-describedby="levels-note"><legend>Levels</legend><div class="level-options"></div></fieldset>
       <button id="new-game" class="new-game" disabled>New game</button>

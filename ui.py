@@ -12,10 +12,11 @@ class GameUI:
     def __init__(self):
         self.session = GameSession()
 
-    def new_game(self, mode, levels=DEFAULT_LEVELS):
+    def new_game(self, mode, levels=DEFAULT_LEVELS, players=None):
         if type(levels) is not int or levels not in UI_LEVELS:
             raise ValueError("Choose one of the available levels.")
-        self.session.new_game(mode, levels)
+        controllers = None if players is None else {1: players.get("X"), -1: players.get("O")}
+        self.session.new_game(mode, levels, controllers)
         return self.snapshot()
 
     def play(self, square):
@@ -75,7 +76,7 @@ class GameUI:
             status = f"Computer {mark} is moving…"
         else:
             status = f"{mark} to move."
-        humans = MODES[self.session.mode]
+        labels = {"human": "Human", "computer": "Computer", "experimental": "Experimental"}
         position = self.session.position
         scope = " / ".join(str(i + 1) for i in position.forced)
         instruction = ("Choose an empty square. X always starts." if position.levels == 1
@@ -89,8 +90,8 @@ class GameUI:
                 "status": status, "turn": mark, "over": over,
                 "computer_turn": computer, "winning": winning,
                 "last_move": self.session.last_move, "history": self.session.history.copy(),
-                "players": {"X": "Human" if 1 in humans else "Computer",
-                            "O": "Human" if -1 in humans else "Computer"}}
+                "players": {mark: labels[self.session.controllers[value]]
+                            for mark, value in (("X", 1), ("O", -1))}}
 
 
 controller = None
@@ -104,7 +105,8 @@ def dispatch(payload):
     request = json.loads(payload)
     action = request.get("action")
     if action == "new":
-        result = controller.new_game(request.get("mode"), request.get("levels", DEFAULT_LEVELS))
+        result = controller.new_game(request.get("mode"), request.get("levels", DEFAULT_LEVELS),
+                                     request.get("players"))
     elif action == "play":
         result = controller.play(request.get("square"))
     elif action == "computer":

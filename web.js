@@ -7,12 +7,15 @@ const substatus = document.querySelector('#substatus');
 const newGame = document.querySelector('#new-game');
 const retry = document.querySelector('#retry');
 let selectedLevel;
-const playerToggles = [...modes.querySelectorAll('[role="switch"]')];
+const playerOptions = [...modes.querySelectorAll('.player-options')];
 let worker, state, ready = false, busy = true, generation = 0, sequence = 0, timer;
 // Translate the two presentation controls into the existing Python mode names.
 function selectedMode() {
-  const [x, o] = playerToggles.map(toggle => toggle.getAttribute('aria-checked') === 'true');
+  const [x, o] = Object.values(selectedPlayers()).map(value => value !== 'human');
   return x ? (o ? 'computer-computer' : 'human-o') : (o ? 'human-x' : 'human-human');
+}
+function selectedPlayers() {
+  return Object.fromEntries(playerOptions.map((group, index) => [index ? 'O' : 'X', group.querySelector('[aria-pressed="true"]').dataset.controller]));
 }
 function renderLevelSelection() {
   levels.querySelectorAll('button').forEach(button => {
@@ -31,7 +34,7 @@ function restart() {
   clearTimeout(timer); generation++;
   // Old replies cannot redraw a board or schedule moves after a restart.
   statusText.textContent = 'Starting a new game…';
-  send({action: 'new', mode: selectedMode(), levels: count});
+  send({action: 'new', mode: selectedMode(), levels: count, players: selectedPlayers()});
 }
 function pathText(path) { return path.map(i => i + 1).join(' / '); }
 function renderNode(node, root = false) {
@@ -125,12 +128,11 @@ function boot() {
     state = data.state; busy = false; render();
   };
 }
-playerToggles.forEach(toggle => toggle.addEventListener('click', () => {
-  const computer = toggle.getAttribute('aria-checked') !== 'true';
-  toggle.setAttribute('aria-checked', String(computer));
-  toggle.querySelector('.toggle-name').textContent = computer ? 'Computer' : 'Human';
+playerOptions.forEach(group => group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+  if (button.getAttribute('aria-pressed') === 'true') return;
+  group.querySelectorAll('button').forEach(option => option.setAttribute('aria-pressed', String(option === button)));
   restart();
-}));
+})));
 newGame.addEventListener('click', restart);
 retry.addEventListener('click', boot);
 boot();

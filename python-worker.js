@@ -4,8 +4,9 @@ let dispatch;
 async function initialize() {
   importScripts(runtimeURL + 'pyodide.js');
   const py = await loadPyodide({indexURL: runtimeURL});
-  for (const name of ['version.py', 'fifteen.py', 'ai_evaluation.py', 'alpha_beta_engine.py', 'ui.py']) {
-    const response = await fetch(new URL(name, self.location.href));
+  for (const name of ['version.py', 'fifteen.py', 'ai_evaluation.py', 'alpha_beta_engine.py', 'experimental_ai.py', 'ui.py']) {
+    // Keep Python modules from different releases out of the same runtime.
+    const response = await fetch(new URL(name, self.location.href), {cache: 'no-store'});
     if (!response.ok) throw new Error(`Could not load ${name}`);
     py.FS.writeFile(name, await response.text());
   }

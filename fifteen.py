@@ -305,11 +305,19 @@ class GameSession:
         self.engine = AlphaBetaEngine()
         self.new_game(mode, levels)
 
-    def new_game(self, mode, levels=DEFAULT_LEVELS):
+    def new_game(self, mode, levels=DEFAULT_LEVELS, players=None):
         from alpha_beta_engine import FifteenPosition
         if mode not in MODES:
             raise ValueError("Choose one of the four game modes.")
+        if players is None:
+            players = {mark: "human" if mark in MODES[mode] else "computer"
+                       for mark in (1, -1)}
+        if set(players) != {1, -1} or any(value not in ("human", "computer", "experimental")
+                                        for value in players.values()):
+            raise ValueError("Choose Human, Computer, or Experimental for each player.")
         position = FifteenPosition(levels=levels)
+        self.controllers = dict(players)
+        self.experimental_engine = None
         self.mode = mode
         self.position = position
         self.last_move = None
@@ -321,7 +329,7 @@ class GameSession:
 
     @property
     def computer_turn(self):
-        return not self.over and self.position.turn not in MODES[self.mode]
+        return not self.over and self.controllers[self.position.turn] != "human"
 
     def play(self, square):
         if self.over:
@@ -332,7 +340,14 @@ class GameSession:
 
     def computer_move(self):
         if self.computer_turn:
-            self._apply(search_move(self.position, self.engine))
+            position, engine = self.position, self.engine
+            if self.controllers[position.turn] == "experimental":
+                from experimental_ai import ExperimentalEngine, ExperimentalPosition
+                if self.experimental_engine is None:
+                    self.experimental_engine = ExperimentalEngine()
+                engine = self.experimental_engine
+                position = ExperimentalPosition.from_game(position)
+            self._apply(search_move(position, engine))
 
     def _apply(self, square):
         mark = "X" if self.position.turn == 1 else "O"

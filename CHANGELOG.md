@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.2-dev
+
+- Add a separate experimental opponent that reuses the shared Python rules,
+  incremental board analysis, and alpha-beta/PVS engine.
+- Rank starting moves and fallback choices using parent winning combinations
+  and the region where the next player is allowed to move.
+- Check immediate whole-game wins and losing replies before timed search.
+- Reuse the current evaluation inside search; disable tactical extensions in
+  the experimental engine so broad positions can complete search depths.
+- Add independent Human/Computer/Experimental controls for X and O while
+  preserving the existing board layout and palette.
+- Keep the current Computer opponent available and unchanged.
+- Add unattended two-seat matches, complete move records, and regression checks
+  for the logged endgame, state restoration, and player combinations.
+
 ## 0.1.1-dev
 
 - Add recursive position evaluation and tactical/destination-aware move ordering.

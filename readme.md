@@ -2,8 +2,8 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.1.1-dev` improves the deterministic AI with recursive evaluation,
-tactical move ordering, principal variation search, and reusable search caches.
+Version `0.1.2-dev` adds an optional experimental AI with recursive potential
+move ordering and a tactical fallback. The existing Computer opponent is retained.
 The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
 
 The board stores this magic square internally:
@@ -21,8 +21,8 @@ Every winning row, column, or diagonal sums to **15**. Each player records the n
 The UI offers **Level 1** (the original game), **Level 2** (nine small boards
 within one parent), and **Level 3** (729 squares across three layers).
 All three levels show the complete playable board. A single sidebar holds the
-X and O Human/Computer toggles, level buttons, New game, status, and move history.
-The two toggles provide all four player combinations. Changing a player or level
+X and O Human/Computer/Experimental selectors, level buttons, New game, status,
+and move history. Each player can be selected independently. Changing a player or level
 starts a new game. On narrow screens, the controls sit above the board.
 The Python model and AI adapter accept any positive `levels` value; practical
 depth is limited by resources and Python's recursion limit.
@@ -36,7 +36,7 @@ upward, and the game ends when the root board is won or drawn.
 A move is a path from the outer board to a leaf square. Drop the first position
 to find the next player's destination: at two levels, playing board 3, square 7
 sends the opponent to board 7. At three levels, `[3, 7, 2]` directs the next move
-to `[7, 2]`. These examples use display positions 1–9; Python paths use 0–8.
+to `[7, 2]`. These examples use display positions 1Ã¢â‚¬â€œ9; Python paths use 0Ã¢â‚¬â€œ8.
 If a destination is finished, freedom expands only to its nearest unfinished
 parent. Finished boards are never playable. The browser highlights the allowed
 boards and disables squares outside them, using permissions supplied by Python.
@@ -70,8 +70,9 @@ python -m http.server 8000 --bind 127.0.0.1
 ```
 
 Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
-as a file: the Python loader needs HTTP. The four modes are two humans, human X
-versus computer O, human O versus computer X, and two computers. Changing either player toggle or pressing **New game** starts a new game, including during AI play.
+as a file: the Python loader needs HTTP. Choose Human, Computer, or Experimental for each letter. This also allows
+automatic matches between the two bots. Changing either player or pressing
+**New game** starts a new game, including during AI play.
 
 `fifteen.py` owns the shared rules, board state, modes, and turn progression.
 `ui.py` handles browser snapshots, status messages, and terminal input/output.
@@ -122,9 +123,35 @@ The AI evaluates recursive threats and board importance,
 including the destination of the next turn. Larger-board play remains heuristic,
 not guaranteed optimal. The engine remains replaceable through the existing `Position` protocol.
 For terminal Level 2, enter the board and square separated by a space, such as
-`3 7`. All four browser modes work at all three exposed levels.
+`3 7`. All nine browser player combinations work at all three exposed levels.
 `python fifteen.py` still starts the two-human mode. Use `--help` for options
 and `--version` to display the current version. `--human` requires `--ai`.
+
+## Experimental opponent
+
+Select **Experimental** for X or O in the browser. It uses the same Python
+rules, search evaluation, and alpha-beta/PVS engine as Computer. Its starting
+move order and fallback also weigh child opportunities through their parent
+combinations and value captures reachable within the routed region. Before timed
+search it checks immediate game wins and opponent winning replies, giving it
+a safer fallback if no search depth finishes. The regular search retains the
+current bot's evaluation but disables its tactical extensions to complete more
+full search depths.
+
+Both bots solve Level 1 exactly. At higher levels both receive the same nominal
+0.5-second budget. The experimental tactical pass completes before returning,
+so a large position can overrun that cooperative deadline. This is heuristic
+play, not a guarantee of winning. The current Computer behavior is unchanged.
+
+Run both seats automatically without an agent or browser:
+
+```sh
+python benchmarks/experimental_match.py --seconds 0.5 --output benchmarks/experimental-results.json
+```
+
+Use `--seed 101` for a repeatable eight-move opening instead of an empty board.
+Timed search can vary with machine load. See `benchmarks/experimental-design.md`
+for the match observations and design, and `benchmarks/README.md` for results.
 
 ## Files
 
@@ -140,6 +167,7 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | `outdated-experiments/print_squares.py` | Standalone demonstration of flattening and printing nested square arrays. |
 | `alpha_beta_engine.py` | Reusable alpha-beta/PVS search and the Fifteen adapter. |
 | `ai_evaluation.py` | Recursive evaluation, move ranking, and reversible analysis caches derived from the shared rules. |
+| `experimental_ai.py` | Experimental evaluation and tactical fallback, reusing the shared search and game adapter. |
 | `version.py` | Shared application version. |
 | `tests/test_alpha_beta_engine.py` | Exhaustive search-correctness and interruption-safety checks. |
 | `tests/test_fifteen.py` | AI integration, command-line, input validation, and gameplay checks. |
@@ -147,6 +175,8 @@ and `--version` to display the current version. `--human` requires `--ai`.
 | `tests/test_recursive.py` | Recursive outcomes, routing, undo, AI, level choices, and terminal paths. |
 | `tests/test_search_improvements.py` | Reference minimax comparisons, tactical choices, incremental analysis, cache isolation, and interruption safety. |
 | `benchmarks/ai_benchmark.py` | Equal-time matches and profiling against a local Git revision. |
+| `benchmarks/experimental_match.py` | Unattended experimental-versus-current matches with both seats and complete move records. |
+| `tests/test_experimental_ai.py` | Logged tactical regressions, shared-state restoration, and all player combinations. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
@@ -164,7 +194,7 @@ from alpha_beta_engine import AlphaBetaEngine, FifteenPosition
 position = FifteenPosition()  # 0 = empty, 1 = X, -1 = O
 engine = AlphaBetaEngine(cache_size=100_000)
 result = engine.search(position, max_depth=9)
-print(result.move + 1)  # Engine moves use indices 0–8; display positions 1–9.
+print(result.move + 1)  # Engine moves use indices 0Ã¢â‚¬â€œ8; display positions 1Ã¢â‚¬â€œ9.
 ```
 
 For a nonterminal Level 1 board, search `position.remaining` plies for optimal
@@ -256,7 +286,7 @@ do not include version numbers.
 
 This repository originated from the five scripts in `15gamePython` in [Etothetaui/dumb_stuff](https://github.com/Etothetaui/dumb_stuff/tree/main/15gamePython), as viewed at source commit `ab5d6b830ec072b7657c961aaf0e1dea39286da6`. The original `fifteen2.py` is now named `fifteen_ai_experimental.py` to identify its purpose and status.
 
-The main game rejects positions outside 1–9 and occupied squares. Scripts in `outdated-experiments/`
+The main game rejects positions outside 1Ã¢â‚¬â€œ9 and occupied squares. Scripts in `outdated-experiments/`
 remain learning experiments: their input validation can accept zero or negative
 positions through Python's negative indexing. The old minimax variant is
 experimental and should not be treated as an unbeatable opponent. The

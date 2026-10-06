@@ -1,5 +1,42 @@
 # AI benchmark notes
 
+## Experimental opponent
+
+The final candidate reuses the current search evaluation and game rules. It
+adds strategic starting-move ordering and a verified tactical fallback, and
+disables local extensions to complete more full search depths. The full log
+review and design are in `experimental-design.md`.
+
+| Candidate | Seconds per move | As X | As O |
+| --- | ---: | --- | --- |
+| Static potential, first pair | 0.5 | Win, 263 plies | Win, 302 plies |
+| Static potential, repeat | 0.5 | Loss, 330 plies | Loss, 285 plies |
+| Routed evaluation | 0.05 | Win, 281 plies | Win, 246 plies |
+| Routed evaluation | 0.5 | Loss, 352 plies | Loss, 275 plies |
+| Additive evaluation | 0.05 | Win, 297 plies | Draw, 325 plies |
+| Root feature, with extensions | 0.5 | Loss, 272 plies | Draw, 392 plies |
+| Final candidate | 0.05 | Win, 289 plies | Win, 280 plies |
+| Final candidate, empty board | 0.5 | Win, 329 plies | Loss, 309 plies |
+| Final candidate, opening seed 101 | 0.5 | Win, 391 plies | Draw, 378 plies |
+| Final candidate, opening seed 102 | 0.5 | Not played | Win, 242 plies |
+
+Discarded variants are recorded in `experimental-development.json`. The final
+candidate's short-budget pair is in `experimental-root-light-trial.json` and
+its empty-board normal-budget pair is in `experimental-results.json`. The
+seed-101 pair is in `experimental-opening-results.json`; the additional O test
+is in `experimental-o-102.json`. The O-only batch was planned for seeds 102,
+103, and 104, stopping on its first win, so it stopped at 102. All five final
+normal-budget games total three wins, one draw, and one loss. Earlier candidates'
+wins are not counted as final-engine wins.
+
+Run `python benchmarks/experimental_match.py --seconds 0.5` for unattended
+matches with both letters. Records include every move, search statistics,
+elapsed time, and source fingerprints. The harness independently replays each
+match through `GameState` before saving it. Timed moves vary with machine load;
+a small sample does not establish a general win rate. Both bots receive the
+same nominal deadline, but cooperative callbacks and the experimental tactical
+pass can overrun it.
+
 ## Variety versus improved deterministic selection
 
 Historical results from the variety experiment, which has now been removed.

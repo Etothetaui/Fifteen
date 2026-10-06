@@ -1,0 +1,884 @@
+[
+  {
+    "turn": 1,
+    "x": "555",
+    "reason": "Take the central square of the central region, keeping several local winning lines open.",
+    "o": "551",
+    "botAssessment": "O took a corner against my center and sent me to an empty leaf board. This is a reasonable local reply; its routing value is not yet clear."
+  },
+  {
+    "turn": 2,
+    "x": "515",
+    "reason": "Claim the center of the directed leaf board; no immediate win or block is available.",
+    "o": "153",
+    "botAssessment": "O chose another corner and routed me back into region 5, where I already have central footholds. No immediate threat was created."
+  },
+  {
+    "turn": 3,
+    "x": "535",
+    "reason": "Build another central foothold in the middle region; route O to a new leaf rather than surrender local potential.",
+    "o": "357",
+    "botAssessment": "O again developed a corner and returned me to an empty leaf in the central region. It is spreading marks rather than contesting my existing centers."
+  },
+  {
+    "turn": 4,
+    "x": "575",
+    "reason": "Keep building centers in region 5; this also sends O to a currently empty board.",
+    "o": "759",
+    "botAssessment": "The bot’s corner placement preserves local lines, but once again lets me develop region 5 uncontested."
+  },
+  {
+    "turn": 5,
+    "x": "595",
+    "reason": "Complete a set of center footholds in the corner leaves of region 5.",
+    "o": "955",
+    "botAssessment": "O took a center in region 9, but returned me to my original board and allowed a local threat."
+  },
+  {
+    "turn": 6,
+    "x": "553",
+    "reason": "Create the 3–5–7 local threat and send O to board 5 / 3, where I hold the center.",
+    "o": "531",
+    "botAssessment": "O contested my center in board 5 / 3 with a corner and routed me away from my immediate threat, which is sensible routing defense."
+  },
+  {
+    "turn": 7,
+    "x": "315",
+    "reason": "Take a center in the newly directed region while preserving my pending threat in board 5 / 5.",
+    "o": "152",
+    "botAssessment": "O created a two-mark threat in board 1 / 5. That is concrete progress, although it cannot finish unless routing brings it back."
+  },
+  {
+    "turn": 8,
+    "x": "525",
+    "reason": "Take another central-region center and avoid routing O to board 1 / 5, where it now threatens a win.",
+    "o": "254",
+    "botAssessment": "O chose an edge in a fresh board and returned me to another central-region leaf. It has not challenged my concentration there yet."
+  },
+  {
+    "turn": 9,
+    "x": "545",
+    "reason": "Take the directed center; continuing to build the middle region without giving O its immediate winning destination.",
+    "o": "453",
+    "botAssessment": "O’s corner in board 4 / 5 left me room to build another local threat. Routing matters more here than simply occupying corners."
+  },
+  {
+    "turn": 10,
+    "x": "537",
+    "reason": "Create a 3–5–7 threat in a second central-region leaf and send O to an empty board.",
+    "o": "375",
+    "botAssessment": "O took a center and directed me to its existing corner. This constrains my routing choices more effectively than its earlier scattered moves."
+  },
+  {
+    "turn": 11,
+    "x": "751",
+    "reason": "Use a corner while sending O to a board where I hold the center; avoid sending it directly to either of my two threatened boards.",
+    "o": "511",
+    "botAssessment": "O occupied another corner against my center and routed me into region 1. The resulting destination trap makes an automatic center move unsafe."
+  },
+  {
+    "turn": 12,
+    "x": "111",
+    "reason": "Choose a corner rather than the center: the center would hand O its immediate win in board 1 / 5.",
+    "o": "115",
+    "botAssessment": "O took the center of board 1 / 1, but its routing gave me the chance to extinguish its earlier immediate threat."
+  },
+  {
+    "turn": 13,
+    "x": "151",
+    "reason": "Block O’s 1–2–3 completion before it can return to this board; route it to my occupied-center board 5 / 1.",
+    "o": "517",
+    "botAssessment": "O created a 1–4–7 threat in board 5 / 1. I need to avoid feeding it that board until I can block or win something more important."
+  },
+  {
+    "turn": 14,
+    "x": "175",
+    "reason": "Take the center of a fresh board; the destination has no immediate O win.",
+    "o": "757",
+    "botAssessment": "O formed a 7–8–9 threat in board 7 / 5, but again gave me a chance to strengthen a central-region board."
+  },
+  {
+    "turn": 15,
+    "x": "573",
+    "reason": "Create another diagonal threat in region 5, sending O to an empty leaf.",
+    "o": "735",
+    "botAssessment": "O took a fresh center and sent me to board 3 / 5. It is maintaining local potential but not yet shutting down my threatened boards."
+  },
+  {
+    "turn": 16,
+    "x": "359",
+    "reason": "Choose a corner that sends O to board 5 / 9, preserving my stronger pending threats and avoiding O’s immediate win in 5 / 1.",
+    "o": "591",
+    "botAssessment": "O again answered a center with a corner and routed me to an undeveloped board. No immediate tactical error is visible."
+  },
+  {
+    "turn": 17,
+    "x": "915",
+    "reason": "Take a fresh center; O’s previous threat in destination 1 / 5 has already been blocked.",
+    "o": "159",
+    "botAssessment": "O created a vertical threat in 1 / 5 but returned me to another useful central-region leaf. It is trading routing access for local threats."
+  },
+  {
+    "turn": 18,
+    "x": "597",
+    "reason": "Add a diagonal threat in board 5 / 9 and route O to an empty board.",
+    "o": "973",
+    "botAssessment": "O avoided sending me to its vulnerable board 7 / 5, instead directing me to a board where it owns the center. That is a more purposeful defensive route."
+  },
+  {
+    "turn": 19,
+    "x": "731",
+    "reason": "Contest O’s center with a corner and send it to a board where I already hold the center.",
+    "o": "319",
+    "botAssessment": "O contested my center with a corner and moved play to a fresh board. This remains solid local play rather than a visible forcing sequence."
+  },
+  {
+    "turn": 20,
+    "x": "195",
+    "reason": "Take the directed center; destination 9 / 5 has only one O mark and no immediate win.",
+    "o": "952",
+    "botAssessment": "O built a 2–5–8 threat in board 9 / 5. I must avoid that destination when O would move there."
+  },
+  {
+    "turn": 21,
+    "x": "521",
+    "reason": "Create a 1–5–9 threat in board 5 / 2; send O to an empty destination.",
+    "o": "212",
+    "botAssessment": "O chose an edge in a fresh leaf and sent me to another empty board. The purpose is not yet apparent from local tactics."
+  },
+  {
+    "turn": 22,
+    "x": "125",
+    "reason": "Take a center in region 1; destination 2 / 5 has no immediate O win.",
+    "o": "256",
+    "botAssessment": "O created a 4–5–6 threat in board 2 / 5 but sent me into another undeveloped central-region leaf."
+  },
+  {
+    "turn": 23,
+    "x": "565",
+    "reason": "Take the center in board 5 / 6, continuing my concentration in region 5.",
+    "o": "656",
+    "botAssessment": "O sent me straight back to board 5 / 6, allowing a second mark there. This develops my position, though it still does not immediately concede the board."
+  },
+  {
+    "turn": 24,
+    "x": "561",
+    "reason": "Use the repeat visit to create a diagonal threat and send O to an empty board.",
+    "o": "613",
+    "botAssessment": "O developed a corner in an empty board, again avoiding my immediate winning destinations."
+  },
+  {
+    "turn": 25,
+    "x": "135",
+    "reason": "Take the center; the destination 3 / 5 has opposing corner marks but no immediate O win.",
+    "o": "354",
+    "botAssessment": "O created a 1–4–7 threat in board 3 / 5. Its threats are accumulating, so safe routing is becoming more restrictive."
+  },
+  {
+    "turn": 26,
+    "x": "541",
+    "reason": "Create a diagonal threat in board 5 / 4 and route O to a fresh board.",
+    "o": "411",
+    "botAssessment": "O chose a corner and gave me a second visit to board 1 / 1. I can now create a threat rather than merely develop."
+  },
+  {
+    "turn": 27,
+    "x": "113",
+    "reason": "Create a top-row threat against O’s center and send it to a board where I already hold the center.",
+    "o": "137",
+    "botAssessment": "O contested my center in board 1 / 3 and routed me to one of its own centers, avoiding the new top-row threat."
+  },
+  {
+    "turn": 28,
+    "x": "379",
+    "reason": "Contest the center with a corner while directing O to an empty leaf.",
+    "o": "797",
+    "botAssessment": "O’s corner choice routed me to a board where the obvious center move is a trap. This is a useful routing constraint."
+  },
+  {
+    "turn": 29,
+    "x": "971",
+    "reason": "Choose a corner; taking the center would send O to its immediate win in board 7 / 5.",
+    "o": "715",
+    "botAssessment": "O took a center but allowed me back into board 1 / 5 to block its second immediate threat. That gives up a potential future capture."
+  },
+  {
+    "turn": 30,
+    "x": "156",
+    "reason": "Block O’s 3–6–9 line. This sends it to my threatened board 5 / 6, so I expect a defensive reply there.",
+    "o": "569",
+    "botAssessment": "O correctly blocked my 1–5–9 threat in board 5 / 6. This is the first direct defensive exchange over one of my central threats."
+  },
+  {
+    "turn": 31,
+    "x": "691",
+    "reason": "Choose a corner instead of sending O to its immediate 2–5–8 win in board 9 / 5.",
+    "o": "913",
+    "botAssessment": "O contested another center and routed me to board 1 / 3. It avoided giving me a completed line but allowed a new threat."
+  },
+  {
+    "turn": 32,
+    "x": "131",
+    "reason": "Create a 1–5–9 threat and send O to a board where neither side has an immediate win.",
+    "o": "316",
+    "botAssessment": "O made a 3–6–9 threat in board 3 / 1 and sent me to a fresh board. I will avoid returning it to that winning destination."
+  },
+  {
+    "turn": 33,
+    "x": "165",
+    "reason": "Take the center of a fresh leaf; the destination has no immediate O completion.",
+    "o": "658",
+    "botAssessment": "O placed a second edge in board 6 / 5 without forming an immediate line. The move may have routing value, but gives me another central-region foothold."
+  },
+  {
+    "turn": 34,
+    "x": "585",
+    "reason": "Take the last undeveloped leaf center in region 5 and route O to an empty board.",
+    "o": "858",
+    "botAssessment": "O returned me to the leaf I had just occupied, allowing another threat. This seems generous locally, though it still avoids an immediate loss."
+  },
+  {
+    "turn": 35,
+    "x": "581",
+    "reason": "Use the immediate return to build a 1–5–9 threat, routing O to another empty board.",
+    "o": "817",
+    "botAssessment": "O chose a corner and gave me a return visit to a board where I own the center. It continues to rely on routing to contain accumulating threats."
+  },
+  {
+    "turn": 36,
+    "x": "179",
+    "reason": "Create a diagonal threat and send O to a board with only one opposing mark.",
+    "o": "795",
+    "botAssessment": "O took a center and built a diagonal threat in 7 / 9, but its destination let me neutralize the older threat in 9 / 5."
+  },
+  {
+    "turn": 37,
+    "x": "958",
+    "reason": "Block the 2–5–8 threat, accepting that O can now block my threatened board 5 / 8.",
+    "o": "589",
+    "botAssessment": "O correctly used the visit to block my diagonal in 5 / 8. Its response was tactically appropriate."
+  },
+  {
+    "turn": 38,
+    "x": "895",
+    "reason": "Take a fresh center; the destination’s immediate threat has just been blocked.",
+    "o": "951",
+    "botAssessment": "O’s move in 9 / 5 creates two separate completion threats, at 3 and 9. This is a strong local fork; I must avoid giving O that board."
+  },
+  {
+    "turn": 39,
+    "x": "514",
+    "reason": "Block O’s 1–4–7 threat and create my own 4–5–6 threat.",
+    "o": "143",
+    "botAssessment": "O routed me into a fresh board whose center and first corner both lead to its threats. This usefully limits my otherwise natural choices."
+  },
+  {
+    "turn": 40,
+    "x": "433",
+    "reason": "Choose a safe corner destination; both 3 / 1 and 3 / 5 would give O immediate captures.",
+    "o": "333",
+    "botAssessment": "O took a corner and sent me back into the same routing constraints. I cannot safely claim the center here."
+  },
+  {
+    "turn": 41,
+    "x": "337",
+    "reason": "Use the opposite corner while avoiding the immediate O wins reachable through squares 1 and 5.",
+    "o": "377",
+    "botAssessment": "O created a diagonal threat in 3 / 7 while routing me into another board with dangerous obvious choices. This is effective threat-based routing."
+  },
+  {
+    "turn": 42,
+    "x": "771",
+    "reason": "Choose a corner with a safe destination; center and square 9 would both hand O immediate local wins.",
+    "o": "719",
+    "botAssessment": "O added a corner to its center in 7 / 1, creating a diagonal threat. Its routing still keeps me away from my own winning squares."
+  },
+  {
+    "turn": 43,
+    "x": "191",
+    "reason": "Create a 1–5–9 threat, sending O to a board without an immediate completion.",
+    "o": "912",
+    "botAssessment": "O created a top-row threat in 9 / 1. This increases the number of destinations I must avoid handing it."
+  },
+  {
+    "turn": 44,
+    "x": "121",
+    "reason": "Add a diagonal threat in region 1 and use the safe destination 2 / 1.",
+    "o": "216",
+    "botAssessment": "O added a second edge in 2 / 1 without an immediate winning line, but avoided routing me to a ready-made win."
+  },
+  {
+    "turn": 45,
+    "x": "161",
+    "reason": "Create a diagonal threat and direct O to a board with only one mark.",
+    "o": "614",
+    "botAssessment": "O’s second mark in 6 / 1 does not yet form a line threat. It has kept the position constrained through routing rather than captures."
+  },
+  {
+    "turn": 46,
+    "x": "145",
+    "reason": "Contest O’s corner with the center; the destination remains tactically safe.",
+    "o": "456",
+    "botAssessment": "O created a 3–6–9 threat in 4 / 5, but returned me to a board where I can make two threats at once."
+  },
+  {
+    "turn": 47,
+    "x": "563",
+    "reason": "Create a fork: I will threaten both square 2 and square 7 in this leaf, while sending O to an empty board.",
+    "o": "632",
+    "botAssessment": "O avoided returning me to the fork and moved play into a fresh leaf with a dangerous center destination."
+  },
+  {
+    "turn": 48,
+    "x": "323",
+    "reason": "Choose a corner rather than sending O to its immediate win in 2 / 5.",
+    "o": "234",
+    "botAssessment": "O selected an edge in a fresh board and again placed an immediate-win trap behind the center move of my next board."
+  },
+  {
+    "turn": 49,
+    "x": "343",
+    "reason": "Choose a safe corner and send O to board 4 / 3, where I already have a mark.",
+    "o": "439",
+    "botAssessment": "O’s routing brought me to another board where several natural moves lose a leaf. It is steadily limiting development choices."
+  },
+  {
+    "turn": 50,
+    "x": "393",
+    "reason": "Choose the safe corner destination 9 / 3; squares 1 and 5 would give O immediate wins.",
+    "o": "933",
+    "botAssessment": "O placed a corner and returned me to a board where I can build a threat without feeding its immediate wins."
+  },
+  {
+    "turn": 51,
+    "x": "339",
+    "reason": "Build a 7–8–9 threat while routing O to a board where I already occupy a corner.",
+    "o": "392",
+    "botAssessment": "O blocked one potential line from my corner in 3 / 9 and routed away from the new bottom-row threat."
+  },
+  {
+    "turn": 52,
+    "x": "923",
+    "reason": "Use a corner with a safe destination rather than handing O board 2 / 5.",
+    "o": "231",
+    "botAssessment": "O built a 1–4–7 threat in 2 / 3 but allowed me back into 3 / 1 to block its older threat."
+  },
+  {
+    "turn": 53,
+    "x": "313",
+    "reason": "Block O’s 3–6–9 threat and create a 3–5–7 counter-threat.",
+    "o": "139",
+    "botAssessment": "O correctly blocked my diagonal in 1 / 3 and simultaneously created a bottom-row threat of its own. Strong local defense."
+  },
+  {
+    "turn": 54,
+    "x": "399",
+    "reason": "Create a 3–6–9 threat while choosing an empty destination instead of O’s dangerous boards 9 / 1 or 9 / 5.",
+    "o": "999",
+    "botAssessment": "O’s corner move sent me back into the same leaf, but the routing traps prevent the usual center response."
+  },
+  {
+    "turn": 55,
+    "x": "997",
+    "reason": "Take a safe corner; center and square 1 would route O directly to winning positions.",
+    "o": "977",
+    "botAssessment": "O created a diagonal threat in 9 / 7 and sent me to an X foothold. It gains another routing trap but permits my own threat to grow."
+  },
+  {
+    "turn": 56,
+    "x": "773",
+    "reason": "Create a top-row threat and route O to a board without an immediate winning completion.",
+    "o": "737",
+    "botAssessment": "O created another diagonal threat, making the obvious block in my next leaf an immediate losing destination. This is a strong routing constraint."
+  },
+  {
+    "turn": 57,
+    "x": "376",
+    "reason": "Create a 3–6–9 threat instead of blocking at 3, because that block would hand O an immediate win in board 7 / 3.",
+    "o": "767",
+    "botAssessment": "O routed me into a board with many dangerous outgoing choices. Sending it to an X threat is safer than feeding one of its wins."
+  },
+  {
+    "turn": 58,
+    "x": "677",
+    "reason": "Use a corner that sends O to my threatened board 7 / 7, where it should need to defend rather than capture.",
+    "o": "772",
+    "botAssessment": "O blocked the top-row threat exactly as expected. It continues to handle direct one-move threats reliably."
+  },
+  {
+    "turn": 59,
+    "x": "721",
+    "reason": "Choose a safe corner destination; center and square 3 would concede immediate O wins.",
+    "o": "213",
+    "botAssessment": "O formed a fork in board 2 / 1, threatening squares 1 and 9. That board is now another destination I should not give it."
+  },
+  {
+    "turn": 60,
+    "x": "138",
+    "reason": "Block O’s bottom row and create a 2–5–8 counter-threat, with an empty destination.",
+    "o": "387",
+    "botAssessment": "O used a fresh corner to place me under the same dense set of region-7 routing traps."
+  },
+  {
+    "turn": 61,
+    "x": "877",
+    "reason": "Choose a safe corner destination in board 7 / 7; several other squares would route O directly to wins.",
+    "o": "777",
+    "botAssessment": "O returned play to board 7 / 7 and occupied a corner. The center remains tactically unsafe for me because of its destination."
+  },
+  {
+    "turn": 62,
+    "x": "776",
+    "reason": "Create a right-column threat while avoiding center and square 9, which send O to immediate wins.",
+    "o": "761",
+    "botAssessment": "O created a 1–4–7 threat in 7 / 6. Its local pressure is growing, but this route lets me direct it toward one of my own threats."
+  },
+  {
+    "turn": 63,
+    "x": "611",
+    "reason": "Choose a corner and send O into board 1 / 1, where my top-row threat constrains its options.",
+    "o": "114",
+    "botAssessment": "O declined to block my top row in 1 / 1. Blocking at 2 would have sent me to an immediate win in 1 / 2, so this looks like deliberate routing defense rather than a missed block."
+  },
+  {
+    "turn": 64,
+    "x": "141",
+    "reason": "Create a diagonal threat and route O to a board with only one mark.",
+    "o": "415",
+    "botAssessment": "O created a 1–5–9 threat in 4 / 1, but gave me access to a fork in 1 / 5."
+  },
+  {
+    "turn": 65,
+    "x": "154",
+    "reason": "Create a fork at squares 5 and 7, while sending O to a board where it faces my diagonal threat.",
+    "o": "549",
+    "botAssessment": "O blocked the threatened diagonal in 5 / 4 and sent me away from both forks. Its direct defense remains consistent."
+  },
+  {
+    "turn": 66,
+    "x": "493",
+    "reason": "Choose a corner with a safe destination; several other moves would give O immediate wins in region 9.",
+    "o": "932",
+    "botAssessment": "O made a top-row threat in 9 / 3, adding another dangerous destination but leaving me room to create a threat."
+  },
+  {
+    "turn": 67,
+    "x": "327",
+    "reason": "Create a diagonal threat with opposite corners and send O to an empty leaf, avoiding its winning destinations.",
+    "o": "271",
+    "botAssessment": "O routed me into its diagonal threat in 7 / 1, where the obvious block has a losing destination. Its threats are interacting effectively."
+  },
+  {
+    "turn": 68,
+    "x": "713",
+    "reason": "Choose a corner that directs O into my threatened board 1 / 3. Blocking at 1 would immediately give O a win in 1 / 1.",
+    "o": "134",
+    "botAssessment": "O again declined a local block: blocking at 2 in 1 / 3 would send me to my winning square in 3 / 2. Its routing defense is coherent."
+  },
+  {
+    "turn": 69,
+    "x": "347",
+    "reason": "Create an opposite-corner threat and route O to an empty board rather than its immediate wins in 4 / 1 or 4 / 5.",
+    "o": "471",
+    "botAssessment": "O sent me back into the same difficult leaf. I need a useful counter-threat rather than a reflexive block with a losing destination."
+  },
+  {
+    "turn": 70,
+    "x": "712",
+    "reason": "Create a top-row counter-threat at square 1 and send O to my threatened board 1 / 2. A direct block at 1 would still concede board 1 / 1.",
+    "o": "129",
+    "botAssessment": "O correctly blocked my diagonal in 1 / 2 and routed me into another constrained fresh board."
+  },
+  {
+    "turn": 71,
+    "x": "299",
+    "reason": "Take the safe corner destination 9 / 9; center and several other corners would immediately feed O a win.",
+    "o": "991",
+    "botAssessment": "O added a corner in 9 / 9 and sent me to its top-row threat in 9 / 1, again making the obvious block unsafe."
+  },
+  {
+    "turn": 72,
+    "x": "914",
+    "reason": "Create a 4–5–6 threat. Blocking O at square 1 would immediately give it board 1 / 1, so I use a safe counter-threat instead.",
+    "o": "149",
+    "botAssessment": "O blocked my diagonal in 1 / 4 and created its own 3–6–9 threat there. It is often combining defense with a counter-threat."
+  },
+  {
+    "turn": 73,
+    "x": "496",
+    "reason": "Create a right-column threat through a safe edge destination, avoiding O’s numerous immediate wins in region 9.",
+    "o": "963",
+    "botAssessment": "O took a corner and routed me into a board where the center is unsafe. The threatened destinations continue to dictate development."
+  },
+  {
+    "turn": 74,
+    "x": "631",
+    "reason": "Choose a corner and send O to my threatened board 3 / 1, rather than to its immediate wins in 3 / 5 or 3 / 7.",
+    "o": "318",
+    "botAssessment": "O declined the local block at 7 in 3 / 1 because it would send me to a win in 1 / 7. It instead created a competing threat at the same square."
+  },
+  {
+    "turn": 75,
+    "x": "185",
+    "reason": "Take the center of a fresh board; unlike many recent positions, this center has a safe destination.",
+    "o": "854",
+    "botAssessment": "O added a second edge in 8 / 5 but let me return to a board where I can build another fork."
+  },
+  {
+    "turn": 76,
+    "x": "543",
+    "reason": "Create a fork at 2 and 7 in board 5 / 4, routing O to a board without an immediate win.",
+    "o": "435",
+    "botAssessment": "O took the center in 4 / 3 and created a diagonal threat, but routed me back to block its older threat in 3 / 5."
+  },
+  {
+    "turn": 77,
+    "x": "351",
+    "reason": "Block O’s left column and create a diagonal threat with my existing square 9, while sending O to an X-threatened board.",
+    "o": "512",
+    "botAssessment": "O created a top-row counter-threat instead of blocking in 5 / 1; the block would have sent me to an immediate win in 1 / 6."
+  },
+  {
+    "turn": 78,
+    "x": "127",
+    "reason": "Create a fork at squares 3 and 4 and choose the safe destination 2 / 7.",
+    "o": "274",
+    "botAssessment": "O made another left-column threat in 2 / 7. Its growing set of threatened boards is making each route harder to choose."
+  },
+  {
+    "turn": 79,
+    "x": "747",
+    "reason": "Choose a corner with a safe destination; most other natural choices lead to immediate O wins.",
+    "o": "479",
+    "botAssessment": "O formed a diagonal threat in 4 / 7 and sent me to another board whose obvious block leads to an O win elsewhere."
+  },
+  {
+    "turn": 80,
+    "x": "796",
+    "reason": "Use a safe edge destination. Blocking O at square 3 would immediately concede board 9 / 3, so I avoid that exchange for now.",
+    "o": "962",
+    "botAssessment": "O formed a top-row threat in 9 / 6 and routed me into a leaf with almost all natural destinations dangerous."
+  },
+  {
+    "turn": 81,
+    "x": "629",
+    "reason": "Take the only corner whose destination is not an immediate O win; board 2 / 9 also contains an X foothold.",
+    "o": "297",
+    "botAssessment": "O contested my corner in 2 / 9 and directed me into another threatened leaf with a dangerous blocking square."
+  },
+  {
+    "turn": 82,
+    "x": "974",
+    "reason": "Choose a safe edge; blocking the diagonal at 5 would send O straight to a win in 7 / 5.",
+    "o": "742",
+    "botAssessment": "O chose an edge and routed me into the same region-2 destination constraints as before."
+  },
+  {
+    "turn": 83,
+    "x": "429",
+    "reason": "Choose the safe corner destination 2 / 9, avoiding O’s four threatened boards in that region.",
+    "o": "294",
+    "botAssessment": "O created a left-column threat in 2 / 9, removing another formerly safe destination."
+  },
+  {
+    "turn": 84,
+    "x": "942",
+    "reason": "Use a safe edge destination with an existing X mark. Most corners and the center would route O to immediate wins.",
+    "o": "427",
+    "botAssessment": "O’s corner in 4 / 2 sent me to a board where I can finally block one of its threats without conceding elsewhere immediately."
+  },
+  {
+    "turn": 85,
+    "x": "277",
+    "reason": "Block O’s left column and send it to my right-column threat in board 7 / 7. This block has a safe destination.",
+    "o": "778",
+    "botAssessment": "O countered with a bottom-row threat in 7 / 7 rather than blocking my right column. Both sides now threaten the same last corner there."
+  },
+  {
+    "turn": 86,
+    "x": "785",
+    "reason": "Take the center and send O to board 8 / 5. Its remaining replies appear to lead into my threatened leaves in region 5, offering a chance to convert pressure into a capture.",
+    "o": "857",
+    "botAssessment": "O chose a reply that allows my capture but directs the winning move toward its own threatened board 7 / 7. This is a sensible way to arrange compensation."
+  },
+  {
+    "turn": 87,
+    "x": "577",
+    "reason": "Capture board 5 / 7 on the diagonal. Accept the likely reply capturing 7 / 7: my capture contributes to the central region I have been building.",
+    "o": "779",
+    "botAssessment": "O took the expected win in 7 / 7, so the first captures were exchanged. It did not miss the available compensation."
+  },
+  {
+    "turn": 88,
+    "x": "792",
+    "reason": "Use a safe edge destination after the exchange; the obvious block at 3 would concede board 9 / 3 immediately.",
+    "o": "929",
+    "botAssessment": "O chose a corner that routed me to another immediate threat with an unsafe blocking destination. Its pressure is still constraining my choices."
+  },
+  {
+    "turn": 89,
+    "x": "298",
+    "reason": "Choose an empty destination; blocking at 1 or using several other squares would immediately give O a capture in region 9.",
+    "o": "981",
+    "botAssessment": "O routed me into a board where I can choose among several X-threatened destinations. This gives me a more active opportunity than the recent forced-looking edge moves."
+  },
+  {
+    "turn": 90,
+    "x": "815",
+    "reason": "Take the center and send O to my fork in board 1 / 5. This forces a difficult defensive choice rather than feeding an O win.",
+    "o": "158",
+    "botAssessment": "O avoided both direct blocks in 1 / 5 and instead created a competing bottom-row threat. It chose routing over trying to extinguish a fork with one move."
+  },
+  {
+    "turn": 91,
+    "x": "583",
+    "reason": "Create another fork, threatening squares 2 and 7 in board 5 / 8, while choosing an empty destination.",
+    "o": "838",
+    "botAssessment": "O routed away from my new fork to a lightly developed leaf. It continues to prioritize avoiding immediate X captures."
+  },
+  {
+    "turn": 92,
+    "x": "381",
+    "reason": "Choose a corner that sends O to a board with my center, avoiding its fork in 8 / 5.",
+    "o": "818",
+    "botAssessment": "O built a bottom-row threat in 8 / 1 while routing me to an X center. It traded another threat for another opportunity for me to develop."
+  },
+  {
+    "turn": 93,
+    "x": "183",
+    "reason": "Create a 3–5–7 threat and choose the safe destination 8 / 3.",
+    "o": "839",
+    "botAssessment": "O’s edge move in 8 / 3 gives me a capture in 3 / 9, but arranges another compensating capture through the destination of my winning move."
+  },
+  {
+    "turn": 94,
+    "x": "396",
+    "reason": "Capture board 3 / 9 with the right column. Accept the likely O capture in 9 / 6 as the cost of converting this threat into territory.",
+    "o": "961",
+    "botAssessment": "O took the expected capture in 9 / 6. The trade is even in leaf count, though larger-board value still depends on future combinations."
+  },
+  {
+    "turn": 95,
+    "x": "619",
+    "reason": "Create a diagonal threat and send O to my threatened board 1 / 9, avoiding its immediate capture in 1 / 5.",
+    "o": "197",
+    "botAssessment": "O declined to block my diagonal in 1 / 9 and sent me back to a constrained leaf, continuing to prioritize routing over local defense."
+  },
+  {
+    "turn": 96,
+    "x": "972",
+    "reason": "Choose a safe edge destination; blocking at 5 or playing 6 or 9 would hand O immediate captures.",
+    "o": "727",
+    "botAssessment": "O contested my corner in 7 / 2 and returned me to another leaf with only two safe destinations."
+  },
+  {
+    "turn": 97,
+    "x": "278",
+    "reason": "Create a 7–8–9 threat through the safe destination 7 / 8; the other useful squares would immediately concede O captures.",
+    "o": "787",
+    "botAssessment": "O contested the center in 7 / 8 and routed me into the dense region-7 threat network again."
+  },
+  {
+    "turn": 98,
+    "x": "874",
+    "reason": "Create a left-column threat while sending O to board 7 / 4, one of the few safe destinations.",
+    "o": "743",
+    "botAssessment": "O built a top-row threat in 7 / 4 and routed me to its diagonal threat in 4 / 3. Again, the direct block has a losing destination."
+  },
+  {
+    "turn": 99,
+    "x": "432",
+    "reason": "Create a top-row counter-threat and send O to my threatened board 3 / 2. Blocking at 1 would immediately concede board 3 / 1.",
+    "o": "329",
+    "botAssessment": "O avoided blocking my diagonal in 3 / 2 and routed me into a leaf with nearly all destinations losing immediately."
+  },
+  {
+    "turn": 100,
+    "x": "292",
+    "reason": "Use the only destination without an immediate O capture and create a 2–5–8 threat. Sending O to the closed 9 / 6 board would give it freedom within region 9, including its winning boards.",
+    "o": "921",
+    "botAssessment": "O formed a diagonal threat in 9 / 2 and sent me into its older fork in 2 / 1. The fork cannot be completely removed in one move."
+  },
+  {
+    "turn": 101,
+    "x": "219",
+    "reason": "Remove one branch of O’s fork and send it to my threatened board 1 / 9. Blocking at 1 would immediately concede board 1 / 1.",
+    "o": "199",
+    "botAssessment": "O correctly blocked my diagonal in 1 / 9 and created a bottom-row threat there, maintaining pressure during defense."
+  },
+  {
+    "turn": 102,
+    "x": "994",
+    "reason": "Use a safe edge destination. Blocking O’s diagonal at 5 would hand it a capture in 9 / 5, and the closed board at 9 / 6 would give it the same opportunity.",
+    "o": "949",
+    "botAssessment": "O routed me to an available capture whose destination would strengthen its parent-board position. I am declining that particular trade for now."
+  },
+  {
+    "turn": 103,
+    "x": "494",
+    "reason": "Create a fork at 5 and 9 instead of taking the immediate win at 9. That capture would let O win 9 / 9 and threaten the larger region 9 through its existing 9 / 6 capture.",
+    "o": "947",
+    "botAssessment": "O formed a bottom-row threat in 9 / 4 and routed me into another leaf whose direct block would strengthen its larger-board position."
+  },
+  {
+    "turn": 104,
+    "x": "472",
+    "reason": "Choose a safe edge destination. Blocking at 5 would let O capture 7 / 5 and create a dangerous larger-region threat alongside its 7 / 7 win.",
+    "o": "729",
+    "botAssessment": "O’s move in 7 / 2 forced me into a leaf with no immediately safe route. This is a concrete success for its accumulated routing pressure."
+  },
+  {
+    "turn": 105,
+    "x": "295",
+    "reason": "Capture board 2 / 9. Every remaining destination gives O a capture, so I take available territory rather than concede a board without compensation.",
+    "o": "959",
+    "botAssessment": "O captured the center leaf 9 / 5, giving it a parent-board threat with 9 / 6. Its choice of capture was strategically important, not just a leaf-count gain."
+  },
+  {
+    "turn": 106,
+    "x": "598",
+    "reason": "Create additional winning threats while using the only destination without an immediate O capture. In particular, sending O to 9 / 4 would now let it win the whole region 9.",
+    "o": "989",
+    "botAssessment": "O’s new diagonal threat in 9 / 8 removes my last safe region-9 destination. Its accumulated local threats have become a forcing larger-board attack."
+  },
+  {
+    "turn": 107,
+    "x": "891",
+    "reason": "Create a diagonal threat while conceding only leaf 9 / 1. Every route gives O something; squares 4 and 6 would concede the whole region immediately. This route should leave me a capture in 1 / 1.",
+    "o": "911",
+    "botAssessment": "O took the available 9 / 1 capture, leaving me the expected win in 1 / 1. The exchange limits its immediate parent-board gain."
+  },
+  {
+    "turn": 108,
+    "x": "112",
+    "reason": "Capture board 1 / 1 on the top row and send O into my fork in 1 / 2. This converts the planned compensation into a real capture.",
+    "o": "124",
+    "botAssessment": "O removed one fork branch in 1 / 2 and routed me to a fresh board. It prevented one completion while still leaving the other threat unresolved."
+  },
+  {
+    "turn": 109,
+    "x": "249",
+    "reason": "Choose a corner that sends O to my fork in 4 / 9, rather than to one of its immediate captures in region 4.",
+    "o": "499",
+    "botAssessment": "O blocked my capture at 9 in board 4 / 9 and forced another concession in region 9. This reply increases its larger-board pressure."
+  },
+  {
+    "turn": 110,
+    "x": "992",
+    "reason": "Concede leaf 9 / 2 rather than the whole region: squares 5 and 6 lead to closed boards and would let O choose its parent-winning capture.",
+    "o": "925",
+    "botAssessment": "O captured 9 / 2, adding several parent-board threats in region 9. Its destination also gives me a forcing chance in the central region."
+  },
+  {
+    "turn": 111,
+    "x": "255",
+    "reason": "Block O’s 4–5–6 threat and send it to board 5 / 5, where its replies lead into my central-region threats or a closed board that releases me within region 5.",
+    "o": "552",
+    "botAssessment": "O chose to send me to a capture in 5 / 2 rather than release me freely within region 5. That limits which part of the central region I can claim."
+  },
+  {
+    "turn": 112,
+    "x": "529",
+    "reason": "Capture board 5 / 2. The destination is already closed, so O will gain freedom inside region 2; I accept that in exchange for more central-region territory.",
+    "o": "279",
+    "botAssessment": "O used its free regional move to block 2 / 7 and force me into a position where all replies concede region 9. This is the clearest strong strategic sequence of the game so far."
+  },
+  {
+    "turn": 113,
+    "x": "793",
+    "reason": "Block O’s diagonal and create two local threats. Every legal destination now loses region 9; this route should at least return me to a capture in board 3 / 1.",
+    "o": "931",
+    "botAssessment": "O completed region 9 as expected. It now leads in parent-board ownership, so my priority is converting a larger region of my own."
+  },
+  {
+    "turn": 114,
+    "x": "317",
+    "reason": "Capture board 3 / 1. Together with my 3 / 9 capture, this creates a parent-board diagonal threat through board 3 / 5, where I already have a local completion available.",
+    "o": "172",
+    "botAssessment": "O avoided the direct block in 1 / 7, which would have handed me a capture in 7 / 1, and instead routed to its threat in 7 / 2."
+  },
+  {
+    "turn": 115,
+    "x": "728",
+    "reason": "Block O’s bottom-row threat using an empty destination. This prevents another O leaf in region 7 without conceding an immediate win elsewhere.",
+    "o": "289",
+    "botAssessment": "O routed me to a leaf whose every destination releases it globally. It is using its completed region as a source of move freedom."
+  },
+  {
+    "turn": 116,
+    "x": "899",
+    "reason": "Capture board 8 / 9. Every move from this leaf sends O into the already-won region 9 and therefore gives it global freedom, so taking the win is the best immediate return.",
+    "o": "764",
+    "botAssessment": "O chose a safe capture in 7 / 6 with its free move, but the destination it selected allows me to force global freedom on my next turn."
+  },
+  {
+    "turn": 117,
+    "x": "649",
+    "reason": "Send O to board 4 / 9. Every reply there routes into completed region 9, giving me global freedom to capture 3 / 5 and complete region 3.",
+    "o": "495",
+    "botAssessment": "O blocked one threat in 4 / 9, but could not avoid granting me global freedom because region 9 was already closed."
+  },
+  {
+    "turn": 118,
+    "x": "355",
+    "reason": "Capture board 3 / 5 and complete the 1–5–9 line of region 3. The winning move also sends O into my constrained central board 5 / 5.",
+    "o": "559",
+    "botAssessment": "O chose to send me to another capture rather than allow free choice within region 5. Its reply limits my route but does not remove the growing parent-board threat."
+  },
+  {
+    "turn": 119,
+    "x": "593",
+    "reason": "Capture board 5 / 9. This gives me leaves 7 and 9 in region 5, threatening the parent win through my fork in 5 / 8. O gains global freedom because region 9 is closed.",
+    "o": "733",
+    "botAssessment": "O captured 7 / 3 but sent the move into completed region 3, giving me global freedom. Its choice strengthens region 7 while allowing my immediate region-5 capture."
+  },
+  {
+    "turn": 120,
+    "x": "582",
+    "reason": "Capture board 5 / 8 and complete region 5 through leaves 7–8–9. This gives X two parent regions and a potential overall diagonal through region 7.",
+    "o": "825",
+    "botAssessment": "O took the center of 8 / 2 and routed me through my completed region 5. It is developing the region that could eventually complete its overall bottom row."
+  },
+  {
+    "turn": 121,
+    "x": "251",
+    "reason": "Create a 1–5–9 threat in board 2 / 5, preparing a parent-region attack with my existing 2 / 9 capture. Every legal move here gives O global freedom because region 5 is closed.",
+    "o": "758",
+    "botAssessment": "O completed region 7, blocking my 3–5–7 overall line and threatening a future win through region 8. Its capture also released me globally."
+  },
+  {
+    "turn": 122,
+    "x": "123",
+    "reason": "Capture board 1 / 2. Every O reply from destination 2 / 3 points into completed region 3, so I should regain global freedom to capture 1 / 3 and complete region 1.",
+    "o": "237",
+    "botAssessment": "O took the available leaf in 2 / 3, but all its possible replies there granted me the global freedom needed to finish region 1."
+  },
+  {
+    "turn": 123,
+    "x": "132",
+    "reason": "Capture board 1 / 3 and complete region 1 through its top row. Region 2 now becomes the direct route to an overall X win alongside regions 1 and 3.",
+    "o": "851",
+    "botAssessment": "O captured the center leaf in region 8, strengthening the region it needs for an overall win. Both sides now have clear parent-board targets."
+  },
+  {
+    "turn": 124,
+    "x": "259",
+    "reason": "Capture the center leaf of region 2. With 2 / 9 already mine, this creates a parent-board diagonal target at 2 / 1 and advances the overall top-row plan.",
+    "o": "837",
+    "botAssessment": "O captured 8 / 3, creating a parent-board target at 8 / 7. My winning threat in region 2 aims to force a defensive tempo before it can continue freely."
+  },
+  {
+    "turn": 125,
+    "x": "211",
+    "reason": "Block O’s top-row threat and create a 1–5–9 threat in this leaf. Capturing 2 / 1 would finish region 2 and the entire game, so O must account for square 5 now.",
+    "o": "871",
+    "botAssessment": "O blocked my possible capture in 8 / 7 but left 2 / 1 / 5 open. That overlooks an immediate three-level winning cascade and loses the game."
+  },
+  {
+    "turn": 126,
+    "x": "215",
+    "reason": "Complete the 1–5–9 line in leaf 2 / 1, which completes region 2’s 1–5–9 line and the overall 1–2–3 row.",
+    "o": "",
+    "botAssessment": "No reply: X won the game on this move."
+  }
+]
