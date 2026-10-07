@@ -34,6 +34,7 @@ use wheel zoom: wheel up zooms toward the cursor and wheel down zooms out,
 within a 1×–9× range. Turn off
 Scroll to zoom to leave wheel scrolling unchanged, or use Zoom all the way out
 to fit and center the entire board. Ctrl-wheel keeps the browser's own zoom.
+The area around the board matches the webpage background; the viewer border is invisible.
 Board marks and completed-board symbols use a font size of 61.8% of their square
 width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.
 Square-ended winning lines pass through the positions reported by Python. Their

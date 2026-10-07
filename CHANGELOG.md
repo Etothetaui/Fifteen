@@ -3,6 +3,7 @@
 ## 0.2.3-dev
 
 - Add a rectangular viewer with a width-to-height ratio of 1.618.
+- Match the viewer background to the webpage and hide its border without changing camera dimensions.
 - Add Navigation Controls with a full zoom-out button and an optional
   cursor-centered wheel zoom toggle, disabled by default.
 - Start with the entire board visible; constrain zoom and retain keyboard access
