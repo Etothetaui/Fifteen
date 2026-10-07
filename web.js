@@ -1,5 +1,6 @@
 // Rendering and transport only; Python supplies legal moves and board results.
 const board = document.querySelector('#board');
+const winningLines = new WinningLines(board);
 const modes = document.querySelector('#modes');
 const levels = document.querySelector('#levels');
 const statusText = document.querySelector('#status');
@@ -190,6 +191,7 @@ function renderNode(node, root = false) {
     element.setAttribute('role', 'group');
     element.setAttribute('aria-label', node.path.length ? `Board ${pathText(node.path)}` : 'Tic-tac-toe board');
     element.replaceChildren(...node.children.map(child => renderNode(child)));
+    winningLines.add(element, node);
     if (node.result !== null && !root) {
       const result = document.createElement('span'); result.className = 'board-result';
       result.textContent = resultSymbol(node.result);
@@ -203,6 +205,7 @@ function renderBoard() {
   // All exposed levels use the same recursive renderer and Python permissions.
   const keepFocus = restoreBoardFocus && (board.contains(document.activeElement) || document.activeElement === document.body);
   renderNode(state.tree, true);
+  winningLines.refresh();
   const cells = availableCells();
   const entry = cells.find(cell => cell.dataset.path === boardFocusPath) || keyboardTarget(cells, null, 'Home');
   setBoardEntry(entry);

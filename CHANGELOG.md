@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.2-dev
+
+- Draw square-ended winning lines through Python's winning positions at every board layer.
+- Match line thickness to the existing X stroke and extend each endpoint by its
+  center-to-tip distance, measured from the font without changing X or O styling.
+- Keep each line above its smaller boards and beneath its larger winner symbol,
+  with the same completed-board fading as the smaller marks.
+- Recalculate line placement after resizing and font loading; omit lines for draws.
+- Test row, column, and diagonal endpoints and verify recursive display on desktop and mobile.
+
 ## 0.2.1-dev
 
 - Mark drawn boards with a diamond (◆) in the board and position picker.

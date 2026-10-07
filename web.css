@@ -35,3 +35,8 @@ fieldset{border:0;margin:0;padding:0;min-width:0}legend{font-size:11px;margin-bo
 .cell,.subboard{container-type:inline-size}
 .cell .mark{font-size:calc(100cqi * var(--symbol-ratio));line-height:1}
 .board-result{font-size:calc((100cqi + 2 * (var(--frame-border) + var(--frame-padding))) * var(--symbol-ratio));line-height:1}
+/* Result overlays wash the line out exactly like the smaller marks beneath them. */
+.board{position:relative;isolation:isolate}
+.subboard{isolation:isolate}
+.winning-line{position:absolute;transform-origin:0 50%;border-radius:0;pointer-events:none;z-index:1}
+.board-result{z-index:2}

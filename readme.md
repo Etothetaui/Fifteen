@@ -2,8 +2,9 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.2.1-dev` adds keyboard board navigation, an optional larger position
-picker, restart confirmation, rules help, and clearer loading and turn feedback.
+Version `0.2.2-dev` adds winning lines at every recursive layer, preserving the
+existing X and O styling. Keyboard navigation, the optional larger position
+picker, restart confirmation, rules help, and loading feedback remain available.
 The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
 
 The board stores this magic square internally:
@@ -28,6 +29,11 @@ moves. Empty and finished games restart immediately. On narrow screens, the
 controls sit above the board.
 Board marks and completed-board symbols use a font size of 61.8% of their square
 width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.
+Square-ended winning lines pass through the positions reported by Python. Their
+thickness matches the existing X stroke; each end extends past the outer winning
+position's center by the X's center-to-tip distance at that layer. Lines remain
+visible beneath larger result symbols, faded like the smaller marks. Drawn boards
+use ◆ without a winning line. Font loading and resizing update the line geometry.
 The Python model and AI adapter accept any positive `levels` value; practical
 depth is limited by resources and Python's recursion limit.
 
@@ -198,6 +204,8 @@ for the match observations and design, and `benchmarks/README.md` for results.
 | `tests/test_experimental_ai.py` | Logged tactical regressions, shared-state restoration, and all player combinations. |
 | `tests/web_keyboard.test.cjs` | Keyboard focus, restart protection, and precise picker interaction checks. |
 | `tests/web_loading.test.cjs` | Worker initialization stages, failure messages, and retry isolation checks. |
+| `winning-lines.js` | Winning-line presentation, font measurements, and responsive placement. |
+| `tests/winning_lines.test.cjs` | Line endpoint geometry and consumption of Python winning flags. |
 | `research/` | UI source findings, ticket decisions, review evidence, and local preview. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
@@ -283,7 +291,7 @@ node throughput and playing strength are separate measurements.
 
 Run all engine and game checks with `python -m unittest discover -v`.
 Run the browser interaction and worker checks with
-`node --test tests/web_keyboard.test.cjs tests/web_loading.test.cjs` (Node.js).
+`node --test tests/*.test.cjs` (Node.js).
 Research, ticket decisions, and verification for the local UI update are recorded
 in [research/ui-ux-sources.md](research/ui-ux-sources.md),
 [research/ui-ux-tickets.md](research/ui-ux-tickets.md), and

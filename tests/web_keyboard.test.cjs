@@ -45,7 +45,7 @@ function harness() {
   });
   document.querySelector('#modes').cells = groups;
   const posted = [], cleared = [], scheduled = [];
-  const context = vm.createContext({document, console, window: {confirm() { return true; }},
+  const context = vm.createContext({document, console, WinningLines: class {add() {} refresh() {}}, window: {confirm() { return true; }},
     clearTimeout(value) { cleared.push(value); }, setTimeout(callback) { scheduled.push(callback); return scheduled.length; },
     Worker: class {postMessage(value) { posted.push(value); } terminate() {}},
   });
