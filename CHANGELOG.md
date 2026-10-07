@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.3-dev
+
+- Add a rectangular viewer with a width-to-height ratio of 1.618.
+- Add Navigation Controls with a full zoom-out button and an optional
+  cursor-centered wheel zoom toggle, disabled by default.
+- Start with the entire board visible; constrain zoom and retain keyboard access
+  to cropped positions while reusing the existing board and winning-line renderer.
+- Position navigation controls beside the viewer on desktop and below it on narrow screens.
+- Document camera-navigation research and test zoom anchoring, limits, reset,
+  input defaults, resizing, and keyboard focus.
+
 ## 0.2.2-dev
 
 - Draw square-ended winning lines through Python's winning positions at every board layer.

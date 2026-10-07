@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?ui=winning-lines-layered">
+  <link rel="stylesheet" href="web.css?ui=navigation">
   <script src="winning-lines.js" defer></script>
+  <script src="board-camera.js" defer></script>
   <script src="web.js?ui=winning-lines" defer></script>
 </head>
 <body>
@@ -40,8 +41,13 @@
       <p id="levels-note" class="mode-note">Changing players or levels starts a new game.</p>
     </aside>
     <section class="play-area" aria-label="Game board">
-      <div class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board" aria-describedby="keyboard-help"></div></div>
+      <div id="board-viewport" class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board" aria-describedby="keyboard-help"></div></div>
     </section>
+    <aside class="navigation-controls" aria-labelledby="navigation-title">
+      <h2 id="navigation-title">Navigation Controls</h2>
+      <button id="zoom-out" type="button">Zoom all the way out</button>
+      <label class="zoom-toggle"><input id="scroll-zoom" type="checkbox"> Scroll to zoom</label>
+    </aside>
   </main>
   <dialog id="reset-dialog" aria-labelledby="reset-question">
     <p id="reset-question">End this game and start a new one?</p>

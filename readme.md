@@ -2,8 +2,8 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.2.2-dev` adds winning lines at every recursive layer, preserving the
-existing X and O styling. Keyboard navigation, the optional larger position
+Version `0.2.3-dev` adds a rectangular viewer and Navigation Controls with optional
+cursor-centered wheel zoom, disabled by default. Winning lines, keyboard navigation, the optional larger position
 picker, restart confirmation, rules help, and loading feedback remain available.
 The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
 
@@ -27,6 +27,13 @@ and move history. Each player can be selected independently. Changing a player o
 starts a new game after confirmation if the current match is unfinished and has
 moves. Empty and finished games restart immediately. On narrow screens, the
 controls sit above the board.
+The board starts fully zoomed out inside a rectangular viewer whose width is
+1.618 times its height. Navigation Controls sit to the right on desktop and below
+the viewer on narrow screens. Scroll to zoom is disabled initially. Enable it to
+use wheel zoom: wheel up zooms toward the cursor and wheel down zooms out,
+within a 1×–9× range. Turn off
+Scroll to zoom to leave wheel scrolling unchanged, or use Zoom all the way out
+to fit and center the entire board. Ctrl-wheel keeps the browser's own zoom.
 Board marks and completed-board symbols use a font size of 61.8% of their square
 width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.
 Square-ended winning lines pass through the positions reported by Python. Their
