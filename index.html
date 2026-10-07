@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?layout=sidebar">
-  <script src="web.js?layout=sidebar" defer></script>
+  <link rel="stylesheet" href="web.css?ui=proportional-marks">
+  <script src="web.js?ui=accessible-controls" defer></script>
 </head>
 <body>
   <main>
@@ -18,16 +18,34 @@
       </fieldset>
       <fieldset id="levels" disabled aria-describedby="levels-note"><legend>Levels</legend><div class="level-options"></div></fieldset>
       <button id="new-game" class="new-game" disabled>New game</button>
-      <div class="status-wrap"><h2 id="status" role="status" aria-live="polite">Loading…</h2><p id="substatus">Downloading the Python runtime.</p></div>
+      <div class="status-wrap" role="status" aria-live="polite" aria-atomic="true"><h2 id="status">Loading…</h2><p id="substatus">Downloading the Python runtime.</p></div>
       <div class="game-top"><span id="board-title">Board</span><span id="move-count">MOVE 00 / 09</span></div>
+      <details id="position-picker" class="position-picker">
+        <summary>Choose position</summary>
+        <p id="picker-label">Loading…</p>
+        <div id="picker-grid" class="picker-grid" role="group" aria-labelledby="picker-label" tabindex="-1"></div>
+        <button id="picker-back" type="button" hidden>Back</button>
+      </details>
       <div class="moves"><span>Moves</span><p id="history">No moves yet.</p></div>
       <button id="retry" hidden>Retry loading</button>
+      <details class="help">
+        <summary>How to play</summary>
+        <p>X starts. Take turns placing a mark in an available empty square. Three of your marks in a row wins a board. A full board without a winner is drawn.</p>
+        <p>Level 1 is one board. At levels 2 and 3, winning a smaller board claims its position in the board containing it. Win the outermost board to win the game. Won or drawn boards are closed. A diamond (◆) marks a drawn board.</p>
+        <p>Your move sends the next player to the matching board: at level 2, square 5 sends them to board 5. At level 3, position 2 / 5 / 7 sends them to board 5 / 7.</p>
+        <p>If that destination is closed, play opens within its nearest unfinished containing board. If the outer destination is closed, play opens across the whole board. The turn message shows where you can play.</p>
+        <p id="keyboard-help">Arrow keys move between available positions. Home and End move to the first and last available positions. Enter or Space plays.</p>
+      </details>
       <p id="levels-note" class="mode-note">Changing players or levels starts a new game.</p>
     </aside>
     <section class="play-area" aria-label="Game board">
-      <div class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board"></div></div>
+      <div class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board" aria-describedby="keyboard-help"></div></div>
     </section>
   </main>
+  <dialog id="reset-dialog" aria-labelledby="reset-question">
+    <p id="reset-question">End this game and start a new one?</p>
+    <div class="reset-actions"><button id="reset-cancel" type="button" autofocus>Keep playing</button><button id="reset-confirm" type="button">New game</button></div>
+  </dialog>
   <noscript>This game needs JavaScript enabled to run Python in your browser.</noscript>
 </body>
 </html>

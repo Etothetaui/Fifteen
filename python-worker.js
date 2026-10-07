@@ -1,21 +1,30 @@
 // Run Python away from the rendering thread; there is no JavaScript AI.
 const runtimeURL = 'https://cdn.jsdelivr.net/pyodide/v0.28.1/full/';
 let dispatch;
+let stage;
+function loading(next) {
+  stage = next;
+  self.postMessage({stage});
+}
 async function initialize() {
+  loading('runtime-download');
   importScripts(runtimeURL + 'pyodide.js');
+  loading('runtime-start');
   const py = await loadPyodide({indexURL: runtimeURL});
+  loading('game-download');
   for (const name of ['version.py', 'fifteen.py', 'ai_evaluation.py', 'alpha_beta_engine.py', 'experimental_ai.py', 'ui.py']) {
     // Keep Python modules from different releases out of the same runtime.
     const response = await fetch(new URL(name, self.location.href), {cache: 'no-store'});
     if (!response.ok) throw new Error(`Could not load ${name}`);
     py.FS.writeFile(name, await response.text());
   }
+  loading('game-start');
   py.runPython('from ui import dispatch, UI_LEVELS\nfrom fifteen import DEFAULT_LEVELS');
   dispatch = py.globals.get('dispatch');
   self.postMessage({ready: true, defaultLevels: py.globals.get('DEFAULT_LEVELS'), levels: JSON.parse(py.runPython('import json; json.dumps(UI_LEVELS)'))});
 }
 const ready = initialize();
-ready.catch(error => self.postMessage({fatal: true, error: String(error)}));
+ready.catch(error => self.postMessage({fatal: true, stage, error: String(error)}));
 // Serialize UI actions even while Python is loading.
 let queue = ready;
 self.onmessage = ({data}) => {

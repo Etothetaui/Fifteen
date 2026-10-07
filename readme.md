@@ -2,8 +2,8 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.1.2-dev` adds an optional experimental AI with recursive potential
-move ordering and a tactical fallback. The existing Computer opponent is retained.
+Version `0.2.1-dev` adds keyboard board navigation, an optional larger position
+picker, restart confirmation, rules help, and clearer loading and turn feedback.
 The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
 
 The board stores this magic square internally:
@@ -23,7 +23,11 @@ within one parent), and **Level 3** (729 squares across three layers).
 All three levels show the complete playable board. A single sidebar holds the
 X and O Human/Computer/Experimental selectors, level buttons, New game, status,
 and move history. Each player can be selected independently. Changing a player or level
-starts a new game. On narrow screens, the controls sit above the board.
+starts a new game after confirmation if the current match is unfinished and has
+moves. Empty and finished games restart immediately. On narrow screens, the
+controls sit above the board.
+Board marks and completed-board symbols use a font size of 61.8% of their square
+width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.
 The Python model and AI adapter accept any positive `levels` value; practical
 depth is limited by resources and Python's recursion limit.
 
@@ -72,7 +76,22 @@ python -m http.server 8000 --bind 127.0.0.1
 Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
 as a file: the Python loader needs HTTP. Choose Human, Computer, or Experimental for each letter. This also allows
 automatic matches between the two bots. Changing either player or pressing
-**New game** starts a new game, including during AI play.
+**New game** starts a new game, including during AI play. **Keep playing** or
+Escape cancels a pending restart without changing the selected players or level.
+
+Tab into the board, then use arrow keys to move between available positions.
+Home and End select the first and last available positions; Enter or Space plays.
+Tab leaves the board in one step. Focus stays on the board after a computer reply
+unless you move to another control.
+
+For small screens, expand **Choose position**. Choose each board from the larger
+3-by-3 controls, then choose a square to play. **Back** changes the selected board
+without making a move. These controls use the same Python permissions and move
+handling as the full board, which remains visible. Expand **How to play** for the
+recursive rules and keyboard controls; opening either section does not reset a match.
+
+The turn and routing messages share one polite live region. Loading messages
+describe the current startup stage; **Retry loading** restarts a failed load.
 
 `fifteen.py` owns the shared rules, board state, modes, and turn progression.
 `ui.py` handles browser snapshots, status messages, and terminal input/output.
@@ -177,6 +196,9 @@ for the match observations and design, and `benchmarks/README.md` for results.
 | `benchmarks/ai_benchmark.py` | Equal-time matches and profiling against a local Git revision. |
 | `benchmarks/experimental_match.py` | Unattended experimental-versus-current matches with both seats and complete move records. |
 | `tests/test_experimental_ai.py` | Logged tactical regressions, shared-state restoration, and all player combinations. |
+| `tests/web_keyboard.test.cjs` | Keyboard focus, restart protection, and precise picker interaction checks. |
+| `tests/web_loading.test.cjs` | Worker initialization stages, failure messages, and retry isolation checks. |
+| `research/` | UI source findings, ticket decisions, review evidence, and local preview. |
 
 Run the terminal game scripts directly with Python, or use the web preview instructions above.
 
@@ -260,6 +282,12 @@ Small samples are regression checks, not ratings;
 node throughput and playing strength are separate measurements.
 
 Run all engine and game checks with `python -m unittest discover -v`.
+Run the browser interaction and worker checks with
+`node --test tests/web_keyboard.test.cjs tests/web_loading.test.cjs` (Node.js).
+Research, ticket decisions, and verification for the local UI update are recorded
+in [research/ui-ux-sources.md](research/ui-ux-sources.md),
+[research/ui-ux-tickets.md](research/ui-ux-tickets.md), and
+[research/release-checklist.md](research/release-checklist.md).
 
 ## Project status
 

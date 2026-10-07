@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.1-dev
+
+- Mark drawn boards with a diamond (◆) in the board and position picker.
+- Size board marks and completed-board symbols at 61.8% of their square width.
+- Add single-entry keyboard board navigation and retain focus across Python updates.
+- Include the last move in accessible position labels and announce routing with turn status.
+- Confirm New game, player, and level changes before discarding an unfinished match;
+  cancellation preserves settings and resumes any pending computer turn.
+- Add optional larger position controls that reuse the full board's Python move path.
+- Add collapsed rules and keyboard help in the existing sidebar.
+- Report actual loading stages and stage-specific failures; ignore obsolete worker replies.
+- Preserve the approved palette, complete Level 3 board, Python magic-square rules,
+  and both AI implementations.
+- Record 15 research sources, classified tickets, independent reviews, and interaction tests.
+
 ## 0.1.2-dev
 
 - Add a separate experimental opponent that reuses the shared Python rules,
