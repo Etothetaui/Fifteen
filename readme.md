@@ -29,8 +29,9 @@ moves. Empty and finished games restart immediately. On narrow screens, the
 controls sit above the board.
 The board starts fully zoomed out inside a rectangular viewer whose width is
 1.618 times its height. Navigation Controls sit to the right on desktop and below
-the viewer on narrow screens. The Scroll to zoom button toggle matches the player
-toggles and is disabled initially. Press it to enable wheel zoom:
+the viewer on narrow screens. Scroll to zoom uses the same option styling as the
+player controls, with Off and On choices. Off is selected initially. Select On to
+enable wheel zoom:
 wheel up zooms toward the cursor and wheel down zooms out,
 within a 1×–9× range. Turn off
 Scroll to zoom to leave wheel scrolling unchanged, or use Zoom all the way out

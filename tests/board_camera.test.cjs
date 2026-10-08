@@ -10,11 +10,16 @@ function harness(enabled = false) {
     getBoundingClientRect() { return {left: 10, top: 20}; }};
   const board = {style: {}, addEventListener(type, listener) { this[type] = listener; }};
   const reset = {addEventListener(type, listener) { this[type] = listener; }};
-  const toggle = {pressed: String(enabled),
+  const options = ['off', 'on'].map(value => ({dataset: {zoom: value},
+    pressed: String(enabled === (value === 'on')),
     getAttribute() { return this.pressed; },
     setAttribute(name, value) { this.pressed = value; },
-    addEventListener(type, listener) { this[type] = listener; }};
+    addEventListener(type, listener) { this[type] = listener; }}));
+  const toggle = {querySelectorAll() { return options; },
+    querySelector() { return options.find(option => option.pressed === 'true'); },
+    click(value) { options.find(option => option.dataset.zoom === value).click(); }};
   const context = vm.createContext({ResizeObserver: class {observe() {}}});
+  vm.runInContext(fs.readFileSync('toggle-selection.js', 'utf8'), context);
   vm.runInContext(fs.readFileSync('board-camera.js', 'utf8').split('\nnew BoardCamera(')[0], context);
   const Camera = vm.runInContext('BoardCamera', context);
   const camera = new Camera(viewport, board, reset, toggle);
@@ -34,17 +39,19 @@ test('initial view and reset show the whole board centered, without changing the
   assert.equal(h.board.style.left, '155px');
   assert.equal(h.board.style.top, '0px');
   assert.equal(h.reset.disabled, true);
-  assert.equal(h.toggle.pressed, 'false');
-  assert.match(fs.readFileSync('index.html', 'utf8'), /<button\b[^>]*id="scroll-zoom"[^>]*aria-pressed="false"/);
+  assert.equal(h.toggle.querySelector().dataset.zoom, 'off');
+  assert.match(fs.readFileSync('index.html', 'utf8'), /data-zoom="off" aria-pressed="true"/);
   assert.equal(h.wheel(-100).prevented, undefined);
   assert.equal(h.camera.scale, 1);
-  h.toggle.click();
-  assert.equal(h.toggle.pressed, 'true');
+  h.toggle.click('on');
+  assert.equal(h.toggle.querySelector().dataset.zoom, 'on');
+  h.toggle.click('on');
+  assert.equal(h.toggle.querySelectorAll().filter(option => option.pressed === 'true').length, 1);
   h.wheel(-100);
-  h.toggle.click();
+  h.toggle.click('off');
   h.reset.click();
   assert.equal(h.camera.scale, 1);
-  assert.equal(h.toggle.pressed, 'false');
+  assert.equal(h.toggle.querySelector().dataset.zoom, 'off');
   assert.equal(h.board.style.left, '155px');
 });
 
@@ -66,9 +73,9 @@ test('zoom bounds consume wheel input, while disabled zoom and Ctrl-wheel leave 
   for (let i = 0; i < 50; i++) h.wheel(100);
   assert.equal(h.camera.scale, 1);
   assert.equal(h.wheel(100).prevented, true);
-  h.toggle.click();
+  h.toggle.click('off');
   assert.equal(h.wheel(-100).prevented, undefined);
-  h.toggle.click();
+  h.toggle.click('on');
   assert.equal(h.wheel(-100, 405, 250, {ctrlKey: true}).prevented, undefined);
   assert.equal(h.camera.scale, 1);
 });

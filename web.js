@@ -132,7 +132,7 @@ function changeLevel(value) {
 }
 function changePlayer(group, button) {
   if (button.getAttribute('aria-pressed') === 'true') return;
-  requestRestart(() => group.querySelectorAll('button').forEach(option => option.setAttribute('aria-pressed', String(option === button))));
+  requestRestart(() => selectToggleOption(group.querySelectorAll('button'), button));
 }
 function pathText(path) { return path.map(i => i + 1).join(' / '); }
 function resultSymbol(result) { return result === 1 ? 'X' : result === -1 ? 'O' : result === 0 ? '◆' : ''; }

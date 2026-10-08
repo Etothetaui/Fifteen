@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?ui=navigation-toggle">
+  <link rel="stylesheet" href="web.css?ui=two-option-navigation">
   <script src="winning-lines.js" defer></script>
-  <script src="board-camera.js?ui=button-toggle" defer></script>
-  <script src="web.js?ui=winning-lines" defer></script>
+  <script src="toggle-selection.js" defer></script>
+  <script src="board-camera.js?ui=two-option-navigation" defer></script>
+  <script src="web.js?ui=two-option-navigation" defer></script>
 </head>
 <body>
   <main>
@@ -46,7 +47,7 @@
     <aside class="navigation-controls" aria-labelledby="navigation-title">
       <h2 id="navigation-title">Navigation Controls</h2>
       <button id="zoom-out" type="button">Zoom all the way out</button>
-      <div class="zoom-toggle"><button id="scroll-zoom" type="button" aria-pressed="false">Scroll to zoom</button></div>
+      <div class="zoom-control"><span id="scroll-zoom-label">Scroll to zoom</span><div id="scroll-zoom" class="player-options" role="group" aria-labelledby="scroll-zoom-label"><button type="button" data-zoom="off" aria-pressed="true">Off</button><button type="button" data-zoom="on" aria-pressed="false">On</button></div></div>
     </aside>
   </main>
   <dialog id="reset-dialog" aria-labelledby="reset-question">

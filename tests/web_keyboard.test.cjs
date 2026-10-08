@@ -51,6 +51,7 @@ function harness() {
   });
   // Boot requires Python/Worker; the interaction code is exercised independently.
   const source = fs.readFileSync('web.js', 'utf8').replace(/boot\(\);\s*$/, '');
+  vm.runInContext(fs.readFileSync('toggle-selection.js', 'utf8'), context);
   vm.runInContext(source, context);
   const run = expression => vm.runInContext(expression, context);
   function cell(path, disabled = false) {
