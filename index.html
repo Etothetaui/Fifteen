@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?ui=navigation">
+  <link rel="stylesheet" href="web.css?ui=navigation-toggle">
   <script src="winning-lines.js" defer></script>
-  <script src="board-camera.js" defer></script>
+  <script src="board-camera.js?ui=button-toggle" defer></script>
   <script src="web.js?ui=winning-lines" defer></script>
 </head>
 <body>
@@ -46,7 +46,7 @@
     <aside class="navigation-controls" aria-labelledby="navigation-title">
       <h2 id="navigation-title">Navigation Controls</h2>
       <button id="zoom-out" type="button">Zoom all the way out</button>
-      <label class="zoom-toggle"><input id="scroll-zoom" type="checkbox"> Scroll to zoom</label>
+      <div class="zoom-toggle"><button id="scroll-zoom" type="button" aria-pressed="false">Scroll to zoom</button></div>
     </aside>
   </main>
   <dialog id="reset-dialog" aria-labelledby="reset-question">

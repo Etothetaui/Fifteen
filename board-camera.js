@@ -5,6 +5,9 @@ class BoardCamera {
     Object.assign(this, {viewport, board, resetButton: reset, toggle, scale: 1, x: 0, y: 0, size: 0});
     viewport.addEventListener('wheel', event => this.wheel(event), {passive: false});
     reset.addEventListener('click', () => this.reset());
+    // The pressed state drives both the shared button styling and wheel input.
+    toggle.addEventListener('click', () => toggle.setAttribute('aria-pressed',
+      String(toggle.getAttribute('aria-pressed') !== 'true')));
     board.addEventListener('focusin', event => this.reveal(event.target));
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(viewport);
@@ -41,7 +44,7 @@ class BoardCamera {
   }
 
   wheel(event) {
-    if (!this.toggle.checked || !this.size || event.ctrlKey || event.deltaY === 0) return;
+    if (this.toggle.getAttribute('aria-pressed') !== 'true' || !this.size || event.ctrlKey || event.deltaY === 0) return;
     // Consume the wheel at limits too, so reaching a limit doesn't scroll the page.
     // Leave Ctrl-wheel to browser zoom; normalize pixel, line, and page deltas.
     event.preventDefault();

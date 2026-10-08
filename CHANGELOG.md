@@ -6,6 +6,7 @@
 - Match the viewer background to the webpage and hide its border without changing camera dimensions.
 - Add Navigation Controls with a full zoom-out button and an optional
   cursor-centered wheel zoom toggle, disabled by default.
+- Display Scroll to zoom as a button toggle matching the existing player toggles.
 - Start with the entire board visible; constrain zoom and retain keyboard access
   to cropped positions while reusing the existing board and winning-line renderer.
 - Position navigation controls beside the viewer on desktop and below it on narrow screens.

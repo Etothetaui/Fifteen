@@ -10,7 +10,10 @@ function harness(enabled = false) {
     getBoundingClientRect() { return {left: 10, top: 20}; }};
   const board = {style: {}, addEventListener(type, listener) { this[type] = listener; }};
   const reset = {addEventListener(type, listener) { this[type] = listener; }};
-  const toggle = {checked: enabled};
+  const toggle = {pressed: String(enabled),
+    getAttribute() { return this.pressed; },
+    setAttribute(name, value) { this.pressed = value; },
+    addEventListener(type, listener) { this[type] = listener; }};
   const context = vm.createContext({ResizeObserver: class {observe() {}}});
   vm.runInContext(fs.readFileSync('board-camera.js', 'utf8').split('\nnew BoardCamera(')[0], context);
   const Camera = vm.runInContext('BoardCamera', context);
@@ -31,16 +34,17 @@ test('initial view and reset show the whole board centered, without changing the
   assert.equal(h.board.style.left, '155px');
   assert.equal(h.board.style.top, '0px');
   assert.equal(h.reset.disabled, true);
-  assert.equal(h.toggle.checked, false);
-  assert.doesNotMatch(fs.readFileSync('index.html', 'utf8').match(/<input\b[^>]*id="scroll-zoom"[^>]*>/)[0], /\bchecked\b/);
+  assert.equal(h.toggle.pressed, 'false');
+  assert.match(fs.readFileSync('index.html', 'utf8'), /<button\b[^>]*id="scroll-zoom"[^>]*aria-pressed="false"/);
   assert.equal(h.wheel(-100).prevented, undefined);
   assert.equal(h.camera.scale, 1);
-  h.toggle.checked = true;
+  h.toggle.click();
+  assert.equal(h.toggle.pressed, 'true');
   h.wheel(-100);
-  h.toggle.checked = false;
+  h.toggle.click();
   h.reset.click();
   assert.equal(h.camera.scale, 1);
-  assert.equal(h.toggle.checked, false);
+  assert.equal(h.toggle.pressed, 'false');
   assert.equal(h.board.style.left, '155px');
 });
 
@@ -62,9 +66,9 @@ test('zoom bounds consume wheel input, while disabled zoom and Ctrl-wheel leave 
   for (let i = 0; i < 50; i++) h.wheel(100);
   assert.equal(h.camera.scale, 1);
   assert.equal(h.wheel(100).prevented, true);
-  h.toggle.checked = false;
+  h.toggle.click();
   assert.equal(h.wheel(-100).prevented, undefined);
-  h.toggle.checked = true;
+  h.toggle.click();
   assert.equal(h.wheel(-100, 405, 250, {ctrlKey: true}).prevented, undefined);
   assert.equal(h.camera.scale, 1);
 });
