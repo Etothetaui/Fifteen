@@ -2,7 +2,7 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.2.3-dev` adds a rectangular viewer and Navigation Controls with optional
+Version `0.2.4-dev` adds drag and edge movement to the rectangular viewer, alongside optional
 cursor-centered wheel zoom, disabled by default. Winning lines, keyboard navigation, the optional larger position
 picker, restart confirmation, rules help, and loading feedback remain available.
 The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
@@ -36,6 +36,22 @@ wheel up zooms toward the cursor and wheel down zooms out,
 within a 1×–9× range. Turn off
 Scroll to zoom to leave wheel scrolling unchanged, or use Zoom all the way out
 to fit and center the entire board. Ctrl-wheel keeps the browser's own zoom.
+At minimum zoom, the board has a 100-pixel gap above and below it inside the viewer.
+Drag to move and Edge scrolling have independent Off / On selectors,
+beside each other and styled like the player controls. Both start Off. When drag movement is On,
+hold the left mouse button and move at least 5 pixels to grab and move the board;
+releasing after a drag does not play a move. When edge movement is On, placing
+the mouse within 75 pixels inside or 25 pixels outside a viewer edge starts panning
+at 300 screen pixels per second. Speed rises smoothly to 485.4 pixels per second
+(1.618 times the base speed) over 1 second in the zone. Leaving the zone resets
+the ramp; moving within it or changing direction retains the elapsed time.
+The viewing direction follows the vector from the viewer center to the mouse,
+with continuous angles. Speed depends on time, not distance from the edge.
+Movement stops at board bounds, beyond that outside strip, while dragging,
+or when the page loses focus.
+Movement only changes axes where the zoomed board is larger than the viewer.
+Changing focus does not move the board or change zoom. Use the navigation
+controls to bring cropped positions into view.
 The area around the board matches the webpage background; the viewer border is invisible.
 Board marks and completed-board symbols use a font size of 61.8% of their square
 width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.

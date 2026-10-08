@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.4-dev
+
+- Leave 100 pixels above and below the centered board at minimum zoom.
+- Add independent Off / On selectors for Drag to move and Edge scrolling,
+  using the existing player-selector styling and shared selection helper.
+- Start panning at 300 screen pixels per second within 75 pixels inside or 25 pixels
+  outside the viewer edge; follow the center-to-mouse vector at continuous angles
+  and respect board bounds. Accelerate smoothly over 1 second to 1.618 times
+  base speed according to time in the zone, resetting on exit or cancellation.
+- Keep clicks distinct from drags and stop movement on focus loss or cancellation.
+- Keep the camera stationary when focus changes, including browser focus scrolling.
+
 ## 0.2.3-dev
 
 - Add a rectangular viewer with a width-to-height ratio of 1.618.

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f2e9">
   <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?ui=two-option-navigation">
+  <link rel="stylesheet" href="web.css?ui=pan-navigation">
   <script src="winning-lines.js" defer></script>
   <script src="toggle-selection.js" defer></script>
-  <script src="board-camera.js?ui=two-option-navigation" defer></script>
+  <script src="board-camera.js?ui=pan-navigation" defer></script>
   <script src="web.js?ui=two-option-navigation" defer></script>
 </head>
 <body>
@@ -48,6 +48,10 @@
       <h2 id="navigation-title">Navigation Controls</h2>
       <button id="zoom-out" type="button">Zoom all the way out</button>
       <div class="zoom-control"><span id="scroll-zoom-label">Scroll to zoom</span><div id="scroll-zoom" class="player-options" role="group" aria-labelledby="scroll-zoom-label"><button type="button" data-zoom="off" aria-pressed="true">Off</button><button type="button" data-zoom="on" aria-pressed="false">On</button></div></div>
+      <div class="movement-controls">
+        <div class="zoom-control"><span id="drag-move-label">Drag to move</span><div id="drag-move" class="player-options" role="group" aria-labelledby="drag-move-label"><button type="button" data-move="off" aria-pressed="true">Off</button><button type="button" data-move="on" aria-pressed="false">On</button></div></div>
+        <div class="zoom-control"><span id="edge-move-label">Edge scrolling</span><div id="edge-move" class="player-options" role="group" aria-labelledby="edge-move-label"><button type="button" data-move="off" aria-pressed="true">Off</button><button type="button" data-move="on" aria-pressed="false">On</button></div></div>
+      </div>
     </aside>
   </main>
   <dialog id="reset-dialog" aria-labelledby="reset-question">
