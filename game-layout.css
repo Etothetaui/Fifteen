@@ -1,0 +1,24 @@
+/* The main workspace reserves only its controls; square boards use the rest. */
+body.main-game{height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+.main-game #game-header{display:flex;gap:16px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);min-width:0}
+.main-game #game-brand{display:flex;gap:8px;align-items:baseline;white-space:nowrap}.main-game #game-brand #version{font-size:10px;color:var(--muted)}
+.main-game #game-status{flex:1;min-width:0}.main-game .status-wrap{padding:0;border:0}.main-game #status{font-size:18px;margin:0}.main-game #substatus{font-size:11px;line-height:1.4;margin:0}.main-game .game-top{font-size:11px;min-height:18px}
+.main-game #game-tools{padding:0;display:flex;flex-wrap:wrap;gap:8px;max-width:100%;flex-shrink:0}.main-game #game-tools .new-game{width:auto}.main-game button:not(.cell):not(.player-options button):not(#levels button){min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:5px;background:var(--board-paper);color:var(--ink);font-size:12px}
+/* Lens views have a fixed magnification, so retain the existing zoom-button visibility. */
+body.main-game[data-magnifiers="1"] #zoom-out,body.main-game[data-magnifiers="2"] #zoom-out{display:none}
+body.main-game main{height:100%;width:100%;max-width:none;min-width:0;min-height:0;padding:8px;gap:12px;display:grid;align-content:center;justify-content:center;overflow:hidden}
+.main-game #lens-stage,.main-game #middle-lens-stage,.main-game .play-area{width:100%;height:100%;min-width:0;min-height:0;position:relative}
+.main-game #board-viewport{width:100%;height:100%;aspect-ratio:1}
+body.main-game[data-magnifiers="0"] .play-area{display:flex}
+body.main-game[data-magnifiers="0"] #lens-stage{display:none}
+body.main-game[data-magnifiers="0"] #show-legal{display:inline-block}
+.main-game .lab-ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.main-game #settings-dialog{width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);overflow:auto}
+.main-game #settings-dialog::backdrop{background:#243b3266}.main-game #settings-content{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+.main-game #settings-content .sidebar{display:flex;flex-direction:column;gap:16px;height:auto;overflow:visible;min-width:0}.main-game #settings-content .navigation-controls{padding-top:0;border:0}
+.main-game #settings-content .navigation-controls{flex-direction:column;align-items:stretch}
+.main-game #settings-content .moves{max-height:180px;overflow:auto}
+.main-game #camera-controls{display:flex;flex-direction:column;gap:16px}
+.main-game #settings-content #modes{display:flex;flex-direction:column;gap:16px}.main-game #settings-content .player{width:100%}.main-game #settings-content .player-options button,.main-game #settings-content #levels button{min-height:44px;font-size:13px}
+@media(max-width:650px){.main-game #game-header{padding:8px;gap:8px;flex-wrap:wrap}.main-game #game-status{order:3;flex-basis:100%}.main-game #settings-open{margin-left:auto}.main-game #settings-content{grid-template-columns:1fr;gap:20px}.main-game #settings-dialog{padding:12px}.main-game #game-brand .brand{font-size:25px}}
+@media(max-width:650px) and (orientation:portrait){body.main-game[data-magnifiers="1"],body.main-game[data-magnifiers="2"]{height:auto;min-height:100dvh;overflow:auto;grid-template-rows:auto auto}body.main-game[data-magnifiers="1"] main,body.main-game[data-magnifiers="2"] main{height:auto}body.main-game[data-magnifiers="1"] #game-header,body.main-game[data-magnifiers="2"] #game-header{position:sticky;top:0;z-index:8;background:var(--paper)}}

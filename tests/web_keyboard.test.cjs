@@ -6,10 +6,12 @@ const vm = require('node:vm');
 
 function harness() {
   const elements = new Map();
+  let created = 0;
   let document;
   function element() {
     return {
       dataset: {}, listeners: {}, cells: [], attributes: {}, disabled: false,
+      classList: {toggle() {}},
       setAttribute(name, value) { this.attributes[name] = value; },
       getAttribute(name) { return this.attributes[name]; },
       append(...children) { this.cells.push(...children); },
@@ -26,7 +28,7 @@ function harness() {
   }
   document = {
     body: element(), activeElement: null, listeners: {},
-    createElement: element,
+    createElement() { created++; return element(); },
     addEventListener(name, fn) { this.listeners[name] = fn; },
     querySelector(selector) {
       if (!elements.has(selector)) elements.set(selector, element());
@@ -45,7 +47,7 @@ function harness() {
   });
   document.querySelector('#modes').cells = groups;
   const posted = [], cleared = [], scheduled = [];
-  const context = vm.createContext({document, console, WinningLines: class {add() {} refresh() {}}, window: {confirm() { return true; }},
+  const context = vm.createContext({document, console, WinningLines: class {add() {} refresh() {} setLevels() {}}, window: {confirm() { return true; }},
     clearTimeout(value) { cleared.push(value); }, setTimeout(callback) { scheduled.push(callback); return scheduled.length; },
     Worker: class {postMessage(value) { posted.push(value); } terminate() {}},
   });
@@ -60,7 +62,8 @@ function harness() {
     Object.assign(value.dataset, {path: path.join('/'), row: String(row), column: String(column)});
     return value;
   }
-  return {document, board: elements.get('#board'), run, cell, context, groups, posted, cleared, scheduled};
+  return {document, board: elements.get('#board'), run, cell, context, groups, posted, cleared, scheduled,
+    created: () => created};
 }
 
 test('recursive positions follow displayed placement at levels 1–3', () => {
@@ -233,4 +236,111 @@ test('picker Back submits nothing; unavailable branches and AI/terminal turns ca
     assert.equal(h.run('pickerPath.length'), 0);
   }
   assert.equal(h.posted.length, 0);
+});
+
+test('deep picker requests one layer and submits the original full move path', () => {
+  const h = harness();
+  h.run('boot(); ready = true; busy = false;');
+  const layer = path => ({kind: 'board', path, levels: 6 - path.length,
+    children: Array.from({length: 9}, (_, index) => ({kind: path.length === 5 ? 'cell' : 'board',
+      path: [...path, index], allowed: index !== 0, mark: '', result: null, children: []}))});
+  h.context.snapshot = {levels: 6, picker: layer([]), over: false, computer_turn: false};
+  h.run('state = snapshot; renderPicker();');
+  const grid = h.document.querySelector('#picker-grid');
+  for (let depth = 1; depth < 6; depth++) {
+    grid.cells[4].listeners.click();
+    const request = h.posted.at(-1);
+    assert.equal(request.channel, 'inspect');
+    assert.deepEqual(Array.from(request.payload.path), Array(depth).fill(4));
+    h.context.reply = {id: request.id, generation: request.generation, channel: 'inspect', state: {picker: layer(Array(depth).fill(4))}};
+    h.run('worker.onmessage({data: reply});');
+  }
+  grid.cells[4].listeners.click();
+  const play = h.posted.at(-1);
+  assert.equal(play.channel, undefined);
+  assert.equal(play.payload.action, 'play');
+  assert.deepEqual(Array.from(play.payload.square), Array(6).fill(4));
+});
+
+test('viewport replies cannot replace permissions after a game action', () => {
+  const h = harness();
+  h.context.boardCamera = {view() { return {left: 0, top: 0, right: 1, bottom: 1, pixels: 500}; }};
+  h.run('boot(); ready = true; busy = false; state = {levels: 6, tree: {current: true}}; queueView();');
+  h.scheduled.at(-1)();
+  const view = h.posted.at(-1);
+  assert.equal(view.channel, 'view');
+  assert.equal(h.run('busy'), false);
+  h.run("send({action: 'play', square: [4,4,4,4,4,4]});");
+  h.context.reply = {id: view.id, generation: view.generation, channel: 'view', state: {tree: {stale: true}}};
+  h.run('worker.onmessage({data: reply});');
+  assert.equal(h.run('state.tree.current'), true);
+  assert.equal(h.run('busy'), true);
+});
+
+test('unchanged viewport detail retains DOM nodes instead of rebuilding them while panning', () => {
+  const h = harness();
+  h.context.snapshot = {levels: 4, tree: pickerTree(2), over: false, computer_turn: false};
+  h.run('state = snapshot; busy = false; renderNode(state.tree, true);');
+  const created = h.created(), first = h.board.cells[0];
+  for (let i = 0; i < 20; i++) h.run('renderNode(JSON.parse(JSON.stringify(state.tree)), true);');
+  assert.equal(h.created(), created, 'camera updates must not allocate the entire board repeatedly');
+  assert.equal(h.board.cells[0], first);
+});
+
+test('retained cells update marks, permissions and click data after a move or failed request', () => {
+  const h = harness();
+  h.context.snapshot = {levels: 4, tree: pickerTree(2), over: false, computer_turn: false};
+  h.run('state = snapshot; busy = false; worker = new Worker(); renderNode(state.tree, true);');
+  const branch = h.board.cells[4], cell = branch.cells[4], created = h.created();
+  h.run("state.tree.children[4].children[4].mark = 'O'; state.tree.children[4].children[4].allowed = false; interactionRevision++; renderNode(state.tree, true);");
+  assert.equal(h.board.cells[4], branch);
+  assert.equal(branch.cells[4], cell);
+  assert.equal(cell._mark.textContent, 'O');
+  assert.equal(cell.disabled, true);
+  cell.listeners.click();
+  assert.equal(h.posted.length, 0);
+  h.run("state.tree.children[4].children[4].mark = ''; state.tree.children[4].children[4].allowed = true; interactionRevision++; renderNode(state.tree, true);");
+  assert.equal(cell.disabled, false);
+  cell.listeners.click();
+  assert.equal(h.posted.at(-1).payload.action, 'play');
+  assert.equal(h.created(), created);
+});
+
+test('lens cells omit hidden spans but create marks and retain permissions after updates', () => {
+  const h = harness();
+  h.document.body.dataset.layout = '7';
+  h.context.snapshot = {levels: 5, tree: pickerTree(2), over: false, computer_turn: false};
+  h.run('state = snapshot; busy = false; worker = new Worker(); renderNode(state.tree, true);');
+  const cell = h.board.cells[4].cells[4], listener = cell.listeners.click;
+  assert.equal(cell.cells.length, 0, 'empty lens cells need no invisible number or mark spans');
+  h.run("state.tree.children[4].children[4].mark = 'O'; state.tree.children[4].children[4].allowed = false; interactionRevision++; renderNode(state.tree, true);");
+  assert.equal(cell._mark.textContent, 'O');
+  assert.equal(cell.cells.length, 1);
+  assert.equal(cell.disabled, true);
+  assert.equal(cell.listeners.click, listener, 'adding a mark must not register another listener');
+  cell.listeners.click();
+  assert.equal(h.posted.length, 0, 'a marked/unavailable cell cannot submit a move');
+  h.document.body.dataset.layout = '1';
+  h.run('renderNode(state.tree, true);');
+  assert.equal(cell._number.textContent, 5, 'other layouts recover their existing number display');
+  assert.equal(cell.listeners.click, listener);
+});
+
+test('viewport cache reuses overscan but requests newly exposed regions and new detail depths', () => {
+  const h = harness();
+  let pixels = 500, left = .25;
+  h.context.boardCamera = {view(buffer = 80) { return {left: buffer ? left - .1 : left,
+    top: .3, right: .7, bottom: .7, pixels}; }, commitDetail() {}};
+  h.run('boot(); ready = true; busy = false; detailThreshold = 54; state = {levels: 6}; loadedView = {left:.2, top:.2, right:.8, bottom:.8, pixels:500}; queueView();');
+  h.scheduled.at(-1)();
+  assert.equal(h.posted.length, 0);
+  pixels = 520;
+  h.run('queueView();'); h.scheduled.at(-1)();
+  assert.equal(h.posted.length, 0, 'zoom within a detail band needs no round trip');
+  left = .1;
+  h.run('queueView();'); h.scheduled.at(-1)();
+  assert.equal(h.posted.length, 1);
+  left = .25; pixels = 1500;
+  h.run('viewRequest = 0; queueView();'); h.scheduled.at(-1)();
+  assert.equal(h.posted.length, 2);
 });

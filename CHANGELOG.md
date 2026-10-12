@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.3.0-dev
+
+- Integrate the overview/magnifier layout into the main game. Default to Level 1,
+  Human X, regular Computer O, zero magnifiers and routing outlines Off.
+- Add 0 / 1 / 2 magnifiers with playable mode 0, chained read-only overview views,
+  an optional routing-outline switch, and explicit Show legal region navigation.
+- Maximize square board sizes for the window; use full-width scrolling panels
+  and a scrollable settings drawer on portrait phones.
+- Keep coarse views playable by inspecting the clicked leaf through Python
+  before using the normal play action; permit finer detail in magnified panels.
+- Keep instruction text visible during computer turns so the board size stays
+  stable between moves. Move New game and Zoom all the way out into the header.
+- Add an Auto-show legal region selector: Off (default), Before human move,
+  or After all moves, reusing the explicit navigation behavior.
+- Include the seven-layout playtest page, packaged local demo, Level 4 game
+  study and rendering/navigation research. Record deferred Experimental AI
+  ideas without changing either opponent's behavior.
+- Share the canvas painter and magnifier movement with the playtest page;
+  calculate boundary widths by depth and screen space, and preserve tiny routing
+  rectangles at higher levels.
+- Add Levels 4–6 using the existing recursive Python game and a two-row,
+  three-column level selector.
+- Load deeper-board detail for the visible region rather than expanding every
+  cell; allow further zoom and load the existing position picker one layer at a time.
+- Keep viewport and picker requests read-only, preserving permissions, routing,
+  restart confirmation, and protection against stale worker replies.
+- Retain unchanged board elements, use transforms during deep-board navigation,
+  and reuse loaded viewport detail until its buffer or subdivision band changes.
+- Limit deep-board detail density to useful cell sizes; verify viewport-sized
+  rendering against the existing model through Level 12 without exposing new choices.
+
 ## 0.2.4-dev
 
 - Leave 100 pixels above and below the centered board at minimum zoom.

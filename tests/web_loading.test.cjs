@@ -20,7 +20,7 @@ async function initialize(failure) {
   });
   vm.runInContext(fs.readFileSync('python-worker.js', 'utf8'), context);
   await vm.runInContext('ready.catch(() => {})', context);
-  return {messages, files};
+  return {messages, files, context};
 }
 
 test('successful initialization reports real stages and then ready once', async () => {
@@ -31,6 +31,16 @@ test('successful initialization reports real stages and then ready once', async 
   assert.equal(messages.filter(m => m.ready).length, 1);
   assert.equal(messages.at(-1).ready, true);
   assert.equal(messages.some(m => m.fatal), false);
+});
+
+test('worker preserves read-only request channels while serializing game actions', async () => {
+  const {messages, context} = await initialize();
+  context.self.onmessage({data: {id: 8, generation: 2, channel: 'view', payload: {action: 'view'}}});
+  context.self.onmessage({data: {id: 9, generation: 2, channel: 'inspect', payload: {action: 'inspect', path: [4]}}});
+  context.self.onmessage({data: {id: 10, generation: 2, payload: {action: 'play', square: [4,4,4,4]}}});
+  await vm.runInContext('queue', context);
+  assert.deepEqual(messages.slice(-3).map(message => [message.id, message.generation, message.channel]),
+    [[8, 2, 'view'], [9, 2, 'inspect'], [10, 2, undefined]]);
 });
 
 for (const stage of ['runtime-download', 'runtime-start', 'game-download', 'game-start']) {
@@ -52,7 +62,7 @@ test('retry discards old worker stage/error messages and shows safe current fail
     worker: undefined, ready: false, busy: false, timer: undefined, generation: 0,
     modes: {}, levels: {}, newGame: {}, board: {querySelectorAll() { return []; }},
     picker: {querySelectorAll() { return []; }},
-    clearTimeout() {}, Worker: class {
+    clearTimeout() {}, cancelPresentationRequests() {}, Worker: class {
       constructor() { this.terminated = false; workers.push(this); }
       terminate() { this.terminated = true; }
     }

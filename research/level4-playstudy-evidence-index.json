@@ -1,0 +1,113 @@
+{
+  "x": {
+    "diary_sections_read": 1478,
+    "methods": {
+      "inspection": 45,
+      "pan at retained leaf zoom": 112,
+      "drag at retained scale": 2105,
+      "overview-inspection": 2,
+      "zoom-transition": 2
+    },
+    "common_absolute_board_widths": [
+      [
+        2635,
+        2057
+      ],
+      [
+        3218,
+        80
+      ],
+      [
+        3564,
+        76
+      ],
+      [
+        2887,
+        49
+      ],
+      [
+        1766,
+        2
+      ],
+      [
+        239,
+        2
+      ]
+    ],
+    "recorded_drags": 11386,
+    "computer_moves_by_number_of_closed_boards": {
+      "0": 678,
+      "1": 49,
+      "2": 9,
+      "3": 2,
+      "4": 1
+    },
+    "computer_immediate_blocks": 56,
+    "themes": {
+      "routing/access": 1478,
+      "ancestor/cascade": 197,
+      "comparison/return": 766,
+      "visibility/scale": 44,
+      "identity/correction": 144
+    }
+  },
+  "o": {
+    "diary_sections_read": 1616,
+    "methods": {
+      "overview-inspection": 1,
+      "zoom-transition": 5,
+      "drag at retained scale": 937,
+      "recorded state and history check; no fresh camera visit": 1,
+      "history check, no camera visit": 167,
+      "history check, no fresh camera visit": 2,
+      "direct DOM child result read; not a new camera position": 1,
+      "saved move record and prior direct-result verification, no new camera visit": 1,
+      "direct DOM result badges": 1,
+      "saved move list filter, no camera visit": 1,
+      "focused read of visible move-history record; no camera visit": 1082,
+      "visible move-history record": 2,
+      "direct rendered root ownership badges": 1,
+      "direct live child ownership badges": 1,
+      "status and legal-region text; no camera visit": 21,
+      "directliveownershipbadges": 2,
+      "ancestor routing correction from current root5closure": 1
+    },
+    "common_absolute_board_widths": [
+      [
+        2635,
+        2219
+      ],
+      [
+        2157,
+        3
+      ],
+      [
+        1766,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        239,
+        1
+      ]
+    ],
+    "recorded_drags": 5150,
+    "computer_moves_by_number_of_closed_boards": {
+      "0": 752,
+      "1": 46,
+      "2": 9,
+      "3": 1
+    },
+    "computer_immediate_blocks": 66,
+    "themes": {
+      "routing/access": 1616,
+      "ancestor/cascade": 509,
+      "comparison/return": 250,
+      "visibility/scale": 24,
+      "identity/correction": 582
+    }
+  }
+}

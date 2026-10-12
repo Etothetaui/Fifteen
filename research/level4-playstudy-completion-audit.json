@@ -1,0 +1,46 @@
+[
+  {
+    "game": "x",
+    "available": true,
+    "saved_plies": 1478,
+    "outcome": -1,
+    "terminal": true,
+    "forced_after": [],
+    "assistant_decisions": 739,
+    "computer_contemporaneous_interpretations": 718,
+    "computer_retrospective_annotations": 739,
+    "inspection_events": 2266,
+    "unassigned_inspections": 0,
+    "closures": 134,
+    "limitations": [
+      "Saved checkpoint is not proof of the current browser position.",
+      "Navigation durations include automation overhead and are not human gaze or thinking time.",
+      "DOM mark lists can include rendered content outside the clipped viewer.",
+      "Early computer moves lack separate contemporaneous interpretation events.",
+      "Recorded zoom ratios use differing historical references; absolute displayed board width is also retained.",
+      "All post-move routing and closures were verified using existing GameState.play."
+    ]
+  },
+  {
+    "game": "o",
+    "available": true,
+    "saved_plies": 1616,
+    "outcome": -1,
+    "terminal": true,
+    "forced_after": [],
+    "assistant_decisions": 808,
+    "computer_contemporaneous_interpretations": 808,
+    "computer_retrospective_annotations": 808,
+    "inspection_events": 2227,
+    "unassigned_inspections": 0,
+    "closures": 141,
+    "limitations": [
+      "Saved checkpoint is not proof of the current browser position.",
+      "Navigation durations include automation overhead and are not human gaze or thinking time.",
+      "DOM mark lists can include rendered content outside the clipped viewer.",
+      "Early computer moves lack separate contemporaneous interpretation events.",
+      "Recorded zoom ratios use differing historical references; absolute displayed board width is also retained.",
+      "All post-move routing and closures were verified using existing GameState.play."
+    ]
+  }
+]

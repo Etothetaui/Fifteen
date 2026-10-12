@@ -34,11 +34,11 @@ function harness(enabled = false) {
     addEventListener(type, listener) { this.listeners[type] = listener; }, querySelector() { return this.modal; }};
   const frames = new Map();
   let frameId = 0, now = 0;
-  const context = vm.createContext({window, document, performance: {now() { return now; }}, ResizeObserver: class {observe() {}},
+  const context = vm.createContext({window, document, performance: {now() { return now; }}, ResizeObserver: class {observe() {} disconnect() { this.disconnected = true; }},
     requestAnimationFrame(fn) { frames.set(++frameId, fn); return frameId; },
     cancelAnimationFrame(id) { frames.delete(id); }});
   vm.runInContext(fs.readFileSync('toggle-selection.js', 'utf8'), context);
-  vm.runInContext(fs.readFileSync('board-camera.js', 'utf8').split('\nnew BoardCamera(')[0], context);
+  vm.runInContext(fs.readFileSync('board-camera.js', 'utf8').split('\nconst boardCamera =')[0], context);
   const Camera = vm.runInContext('BoardCamera', context);
   const camera = new Camera(viewport, board, reset, toggle, dragToggle, edgeToggle);
   const wheel = (deltaY, x = 405, y = 250, extra = {}) => {
@@ -74,6 +74,15 @@ test('initial view and reset show the whole board centered, without changing the
   assert.equal(h.camera.scale, 1);
   assert.equal(h.toggle.querySelector().dataset.zoom, 'off');
   assert.equal(h.board.style.left, '255px');
+});
+test('main workspace can fill its square and chained lenses can exceed the legacy low-level zoom cap',()=>{
+  const h=harness();
+  h.camera.fitPadding=0;h.camera.resize();
+  assert.equal(h.camera.size,500);
+  assert.equal(h.camera.y,0);
+  h.camera.maxScaleFloor=1/(.272*.272);
+  h.camera.navigate({u:.5,v:.5,pixels:500/(.272*.272)});
+  assert.ok(Math.abs(h.camera.size-500/(.272*.272))<1e-8);
 });
 
 test('wheel zoom preserves the board point under the cursor unless a boundary intervenes', () => {
@@ -334,4 +343,63 @@ test('elapsed zone time is retained at board bounds and long frames cannot produ
   assert.ok(Math.abs(h.camera.x - x + 24.27) < 1e-10);
   h.edgeToggle.click('off');
   assert.equal(h.camera.edgeEntered, null);
+});
+
+test('deeper levels extend zoom to usable cell sizes and publish normalized viewport bounds', () => {
+  const h = harness(true);
+  h.camera.setLevels(6);
+  for (let i = 0; i < 50; i++) h.wheel(-100);
+  assert.equal(h.camera.scale, h.camera.maxScale);
+  assert.equal(h.camera.size / 3 ** 6, 44);
+  const view = h.camera.view();
+  assert.ok(view.left >= 0 && view.top >= 0 && view.right <= 1 && view.bottom <= 1);
+  assert.ok(view.right > view.left && view.bottom > view.top);
+  h.camera.setLevels(3);
+  assert.equal(h.camera.scale, 1);
+  assert.equal(h.camera.maxScale, 9);
+});
+
+test('deep camera motion uses transforms without resizing the recursive layout each wheel event', () => {
+  const h = harness(true);
+  h.camera.setLevels(4);
+  const width = h.board.style.width;
+  for (let i = 0; i < 8; i++) h.wheel(-100);
+  assert.equal(h.board.style.width, width);
+  assert.match(h.board.style.transform, /scale\(/);
+  h.camera.commitDetail();
+  assert.equal(h.board.style.width, `${h.camera.size}px`);
+  h.camera.setLevels(3);
+  assert.equal(h.board.style.transform, '');
+});
+
+
+test('disposing an auxiliary camera releases shared listeners and pending movement', () => {
+  const h = harness();
+  const registered = [...h.camera.listeners];
+  const removed = [];
+  for (const [target] of registered) target.removeEventListener = (type, handler, options) => removed.push([target, type, handler, options]);
+  h.camera.onChange = () => {};
+  h.camera.dispose();
+  assert.equal(removed.length, registered.length);
+  removed.forEach((entry, index) => entry.forEach((value, field) => assert.equal(value, registered[index][field])));
+  assert.equal(h.camera.observer.disconnected, true);
+  assert.equal(h.camera.listeners.length, 0);
+  assert.equal(h.camera.onChange, null);
+  assert.equal(h.frames.size, 0);
+});
+
+
+test('auxiliary resizing preserves absolute board scale and reset still fits the board', () => {
+  const h = harness();
+  h.camera.setLevels(4);
+  h.camera.navigate({u: .5, v: .5, pixels: 2000});
+  h.camera.preservePixelsOnResize = true;
+  h.viewport.clientHeight = 140;
+  h.camera.resize();
+  assert.equal(h.camera.size, 2000);
+  assert.equal(h.camera.capture().u, .5);
+  assert.equal(h.camera.capture().v, .5);
+  h.camera.reset();
+  assert.equal(h.camera.scale, 1);
+  assert.equal(h.camera.size, h.camera.baseSize);
 });

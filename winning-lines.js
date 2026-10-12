@@ -1,14 +1,26 @@
 // Presentation only: Python supplies the winning children; no wins are inferred here.
+// L = D + 2kr: multiply the X's center-to-tip reach by k at each end.
+const WIN_LINE_EXTENSION = 1.618;
 class WinningLines {
   constructor(board) {
     this.board = board;
     this.metrics = new Map();
+    this.layouts = new Map();
     this.frame = null;
-    this.observer = new ResizeObserver(() => this.refresh());
+    this.observer = new ResizeObserver(() => this.invalidateLayout());
     this.observer.observe(board);
-    const fontsChanged = () => { this.metrics.clear(); this.refresh(); };
+    const fontsChanged = () => { if (!this.disposed) { this.metrics.clear(); this.invalidateLayout(); } };
+    this.fontsChanged = fontsChanged;
     document.fonts.ready.then(fontsChanged);
     document.fonts.addEventListener('loadingdone', fontsChanged);
+  }
+
+  dispose() {
+    this.disposed = true;
+    this.observer.disconnect();
+    document.fonts.removeEventListener('loadingdone', this.fontsChanged);
+    if (this.frame !== null) cancelAnimationFrame(this.frame);
+    this.frame = null;
   }
 
   add(element, node) {
@@ -19,6 +31,8 @@ class WinningLines {
     line.setAttribute('aria-hidden', 'true');
     line.dataset.first = winners[0];
     line.dataset.last = winners[2];
+    line.dataset.levels = node.levels;
+    line.dataset.winner = node.result;
     element.append(line);
   }
 
@@ -67,31 +81,61 @@ class WinningLines {
     this.frame = requestAnimationFrame(() => { this.frame = null; this.draw(); });
   }
 
-  draw() {
-    this.board.querySelectorAll('.winning-line').forEach(line => {
+  invalidateLayout() {
+    this.layouts.clear();
+    this.refresh();
+  }
+
+  setLevels(levels) {
+    if (this.levels === levels) return;
+    this.levels = levels;
+    this.invalidateLayout();
+  }
+
+  layoutFor(line) {
+    const key = line.dataset.levels;
+    if (!this.layouts.has(key)) {
       const owner = line.parentElement;
-      const first = owner.children[Number(line.dataset.first)];
-      const last = owner.children[Number(line.dataset.last)];
-      const symbol = first.querySelector(':scope > .mark, :scope > .board-result');
-      if (!symbol) return;
-      const style = getComputedStyle(symbol), metrics = this.measure(style);
+      const symbol = owner.children[Number(line.dataset.first)].querySelector(':scope > .mark, :scope > .board-result');
+      const style = getComputedStyle(symbol);
       const origin = owner.getBoundingClientRect();
-      const center = element => {
+      // All boards at this recursive layer share their grid and font size.
+      // Save local centers and scaled glyph dimensions once for the current layout.
+      const centers = [...owner.children].slice(0, 9).map(element => {
         const rect = element.getBoundingClientRect();
         return {x: rect.left + rect.width / 2 - origin.left - owner.clientLeft,
           y: rect.top + rect.height / 2 - origin.top - owner.clientTop};
-      };
-      const geometry = WinningLines.geometry(center(first), center(last), metrics);
+      });
+      this.layouts.set(key, {centers, metrics: this.measure(style), geometries: new Map(),
+        colors: new Map([[line.dataset.winner, style.color]])});
+    }
+    return this.layouts.get(key);
+  }
+
+  draw() {
+    this.board.querySelectorAll('.winning-line').forEach(line => {
+      const layout = this.layoutFor(line);
+      const key = `${line.dataset.first}/${line.dataset.last}`;
+      if (!layout.geometries.has(key)) {
+        layout.geometries.set(key, WinningLines.geometry(layout.centers[Number(line.dataset.first)],
+          layout.centers[Number(line.dataset.last)], layout.metrics));
+      }
+      if (!layout.colors.has(line.dataset.winner)) {
+        const first = line.parentElement.children[Number(line.dataset.first)];
+        layout.colors.set(line.dataset.winner, getComputedStyle(first.querySelector(':scope > .mark, :scope > .board-result')).color);
+      }
+      const geometry = layout.geometries.get(key);
       Object.assign(line.style, {left: `${geometry.x}px`, top: `${geometry.y}px`,
-        width: `${geometry.length}px`, height: `${metrics.stroke}px`,
-        transform: `rotate(${geometry.angle}rad)`, backgroundColor: style.color});
+        width: `${geometry.length}px`, height: `${layout.metrics.stroke}px`,
+        transform: `rotate(${geometry.angle}rad)`, backgroundColor: layout.colors.get(line.dataset.winner)});
     });
   }
 
   static geometry(first, last, {reach, stroke}) {
     const dx = last.x - first.x, dy = last.y - first.y, distance = Math.hypot(dx, dy);
-    return {x: first.x - dx / distance * reach,
-      y: first.y - dy / distance * reach - stroke / 2,
-      length: distance + 2 * reach, angle: Math.atan2(dy, dx)};
+    const extension = WIN_LINE_EXTENSION * reach;
+    return {x: first.x - dx / distance * extension,
+      y: first.y - dy / distance * extension - stroke / 2,
+      length: distance + 2 * extension, angle: Math.atan2(dy, dx)};
   }
 }

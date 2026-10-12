@@ -159,7 +159,7 @@ class RecursiveTests(unittest.TestCase):
         state = ui.play([0, 4])
         self.assertEqual(state['forced'], [4])
         self.assertEqual(state['history'][0]['square'], [1, 5])
-        for bad in (4, 0, True, '2'):
+        for bad in (7, 0, True, '2'):
             with self.assertRaises(ValueError): ui.new_game('human-human', bad)
             self.assertEqual(ui.snapshot(), state)
         state = ui.new_game('human-human', 3)
@@ -187,6 +187,71 @@ class RecursiveTests(unittest.TestCase):
                 else: session.play((0, 4))
             self.assertEqual(len(session.history), 1)
             self.assertEqual(len(session.position.forced), 1)
+
+    def test_deep_browser_views_are_bounded_and_use_shared_permissions(self):
+        def nodes(tree):
+            yield tree
+            for child in tree.get('children', []):
+                yield from nodes(child)
+
+        for levels in (4, 5, 6):
+            ui = GameUI()
+            state = ui.new_game('human-human', levels)
+            self.assertEqual(state['capacity'], str(9 ** levels))
+            self.assertLess(len(list(nodes(state['tree']))), 1000)
+            self.assertEqual(len(state['picker']['children']), 9)
+            ui.set_view(dict(left=.49, top=.49, right=.51, bottom=.51,
+                             pixels=3 ** levels * 44))
+            path = [4] * levels
+            state = ui.play(path)
+            self.assertLess(len(list(nodes(state['tree']))), 1000)
+            leaves = [node for node in nodes(state['tree']) if node['kind'] == 'cell']
+            self.assertTrue(leaves)
+            for leaf in leaves:
+                self.assertEqual(leaf['allowed'], ui.session.position.allows_prefix(tuple(leaf['path'])))
+            placed = next(leaf for leaf in leaves if leaf['path'] == path)
+            self.assertEqual(placed['mark'], 'X')
+            before = full_state(ui.session.position)
+            inspection = ui.inspect(path[:-1])
+            self.assertEqual(len(inspection['children']), 9)
+            self.assertEqual(inspection['children'][4]['mark'], 'X')
+            self.assertFalse(inspection['children'][4]['allowed'])
+            self.assertEqual(full_state(ui.session.position), before)
+            for bad in ([9], [True], path, '4'):
+                with self.assertRaises(ValueError): ui.inspect(bad)
+
+    def test_view_geometry_validation_is_atomic(self):
+        ui = GameUI()
+        view = ui.view.copy()
+        for bad in ({}, view | {'pixels': True}, view | {'pixels': float('nan')},
+                    view | {'left': -1}, view | {'right': 2}, view | {'bottom': -.1}):
+            with self.assertRaises(ValueError): ui.set_view(bad)
+            self.assertEqual(ui.view, view)
+
+    def test_visible_detail_cost_depends_on_viewport_not_total_cell_count(self):
+        def count(tree):
+            return 1 + sum(count(child) for child in tree.get('children', []))
+        for levels in (4, 6, 12):
+            ui = GameUI()
+            # The UI exposes six levels; exercise its renderer against the
+            # existing arbitrary-depth model without adding extra UI choices.
+            ui.session.new_game('human-human', levels)
+            pixels = 3 ** levels * 44
+            ui.set_view(dict(left=.5 - 480 / pixels, top=.5 - 330 / pixels,
+                             right=.5 + 480 / pixels, bottom=.5 + 330 / pixels, pixels=pixels))
+            self.assertLess(count(ui.visible_tree()), 1000)
+
+    def test_read_only_browser_actions_preserve_the_match(self):
+        ui = GameUI()
+        with patch('ui.controller', ui):
+            state = json.loads(dispatch(json.dumps({'action': 'new', 'mode': 'human-human', 'levels': 6})))
+            self.assertEqual(state['levels'], 6)
+            before = full_state(ui.session.position)
+            view = json.loads(dispatch(json.dumps({'action': 'view', 'view': ui.view})))
+            inspection = json.loads(dispatch(json.dumps({'action': 'inspect', 'path': [4, 4, 4, 4, 4]})))
+            self.assertIn('tree', view)
+            self.assertEqual(len(inspection['picker']['children']), 9)
+            self.assertEqual(full_state(ui.session.position), before)
 
     def test_terminal_accepts_recursive_paths(self):
         result = subprocess.run([sys.executable, 'fifteen.py', '--levels', '2'],

@@ -2,10 +2,11 @@
 
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
-Version `0.2.4-dev` adds drag and edge movement to the rectangular viewer, alongside optional
-cursor-centered wheel zoom, disabled by default. Winning lines, keyboard navigation, the optional larger position
-picker, restart confirmation, rules help, and loading feedback remain available.
-The browser and terminal share the Python rules and engine for Levels 1, 2, and 3.
+The main browser game defaults to Level 1, Human X, regular Computer O, zero
+magnifiers, and routing outlines Off. Square boards use the available window
+space. Winning lines, keyboard navigation, the position picker, restart
+confirmation, rules help, and loading feedback remain available.
+The browser and terminal share the Python rules and engine for Levels 1–6.
 
 The board stores this magic square internally:
 
@@ -20,23 +21,60 @@ Every winning row, column, or diagonal sums to **15**. Each player records the n
 ## Recursive boards
 
 The UI offers **Level 1** (the original game), **Level 2** (nine small boards
-within one parent), and **Level 3** (729 squares across three layers).
-All three levels show the complete playable board. A single sidebar holds the
-X and O Human/Computer/Experimental selectors, level buttons, New game, status,
-and move history. Each player can be selected independently. Changing a player or level
-starts a new game after confirmation if the current match is unfinished and has
-moves. Empty and finished games restart immediately. On narrow screens, the
-controls sit above the board.
-The board starts fully zoomed out inside a rectangular viewer whose width is
-1.618 times its height. Navigation Controls sit to the right on desktop and below
-the viewer on narrow screens. Scroll to zoom uses the same option styling as the
+within one parent), **Level 3** (729 squares), **Level 4** (6,561 squares),
+**Level 5** (59,049 squares), and **Level 6** (531,441 squares). The selector
+places Levels 1–3 on the first row and Levels 4–6 on the second.
+All levels show a complete board overview. Levels 4–6 load detailed cells only
+where the board is large enough and within the viewer, including a small buffer
+around it. Zoom into a region to play its cells, or use Choose position to navigate
+one layer at a time. Python supplies all permissions and results for both views.
+Deep-board navigation retains existing elements and moves them with transforms.
+Loaded detail is reused until the viewer leaves its buffer or reaches a new
+subdivision size. Detail density depends on the viewer size rather than total capacity.
+**Game & navigation settings** opens the player selectors, level buttons,
+move history, rules help, position picker and Navigation Controls. **New game**,
+**Show legal region**, and **Zoom all the way out** are in the header. The zoom-out
+button is available with zero magnifiers. Status and instructions
+stays above the boards. Changing players or level confirms before ending an
+unfinished match that has moves. Empty and finished games restart immediately.
+
+**Magnifiers** offers 0 / 1 / 2 with the same switch styling as the player options.
+0 displays a centered, playable whole board, initially fully zoomed out.
+1 displays a non-playable whole-board overview and its playable magnified crop.
+2 adds a second selection outline on the non-playable middle board; only the
+third board is playable. Drag either outline with a mouse or touch, or focus it
+and hold arrow keys; Shift moves faster. **Show legal region** explicitly
+positions the relevant view or outlines. **Auto-show legal region** offers
+**Off** (default), **Before human move**, and **After all moves**. Before human
+move repositions after a move only when the next player is human; After all
+moves repositions after each move. Finished games keep their final view.
+Turning the setting on does not immediately reposition the board, and starting
+a new game uses the normal initial view. Instruction text stays visible during
+computer turns to keep the board size stable.
+**Routing outlines** starts Off. On adds alternating light/dark purple outlines
+for successive destination areas. Whole-board routing is implicit and omitted.
+Blue indicates the current playable area, and the latest move stays marked.
+The main game and layout playtest share the same canvas painter and movement
+helpers. Boundary thickness depends on nesting depth and available pixels,
+without a per-level lookup table; tiny routing rectangles cannot invert.
+Magnified panels permit finer detail for smaller displays. When a clicked
+region has no loaded leaf buttons, the same Python position inspector supplies
+the exact square and permissions before the normal play action is used.
+
+On desktop, the boards use the largest common square size that fits the window.
+On portrait phones, magnifier panels stack at full width and scroll vertically;
+the settings button remains available in the sticky header. Settings controls
+stack in a scrollable drawer. Landscape windows use the packing that maximizes
+the board sizes. The ordinary board's zoom and movement controls are available
+when Magnifiers is 0. Scroll to zoom uses the same option styling as the
 player controls, with Off and On choices. Off is selected initially. Select On to
 enable wheel zoom:
 wheel up zooms toward the cursor and wheel down zooms out,
-within a 1×–9× range. Turn off
+within a 1×–9× range at Levels 1–3. Levels 4–6 allow further zoom so the smallest
+squares can be selected. Turn off
 Scroll to zoom to leave wheel scrolling unchanged, or use Zoom all the way out
 to fit and center the entire board. Ctrl-wheel keeps the browser's own zoom.
-At minimum zoom, the board has a 100-pixel gap above and below it inside the viewer.
+At minimum zoom, the whole board fills its square viewer.
 Drag to move and Edge scrolling have independent Off / On selectors,
 beside each other and styled like the player controls. Both start Off. When drag movement is On,
 hold the left mouse button and move at least 5 pixels to grab and move the board;
@@ -57,9 +95,12 @@ Board marks and completed-board symbols use a font size of 61.8% of their square
 width at every layer; `--symbol-ratio` in `web.css` defines the shared proportion.
 Square-ended winning lines pass through the positions reported by Python. Their
 thickness matches the existing X stroke; each end extends past the outer winning
-position's center by the X's center-to-tip distance at that layer. Lines remain
+position's center by 1.618 times the X's center-to-tip distance at that layer.
+The multiplier is `WIN_LINE_EXTENSION` in `winning-lines.js` (`L = D + 2kr`). Lines remain
 visible beneath larger result symbols, faded like the smaller marks. Drawn boards
-use ◆ without a winning line. Font loading and resizing update the line geometry.
+use ◆ without a winning line. Grid centers, scaled stroke/reach, and line geometry
+are cached per recursive layer and reused across boards and redraws. Resizing,
+font loading, or changing the game level invalidates the saved layout dimensions.
 The Python model and AI adapter accept any positive `levels` value; practical
 depth is limited by resources and Python's recursion limit.
 
@@ -137,6 +178,76 @@ Fonts with local fallbacks. No game data is sent to a Python server.
 
 The page uses relative paths and `.nojekyll` for GitHub Pages hosting from the
 `main` branch's root directory. No backend server is needed.
+
+### Separate layout playtest
+
+Open `layout-playtest.html` through the same local server as the normal browser
+game (for example `python -m http.server 8000`, then
+`http://127.0.0.1:8000/layout-playtest.html`). This separate prototype defaults to
+Level 4, Human X and regular Computer O. The bottom selector switches among
+seven layouts without restarting the current match: Board-first, Two-view
+comparison, Hierarchy workspace, Live pinned regions, Preview-on-demand, and
+Local board & watched regions, and Overview & playable lens. The URL's `?variant=1` through `?variant=7`
+selects the initial layout.
+
+Layout 7 starts with the same fresh Level 4, Human X / regular Computer O game.
+The fixed left overview is non-playable. Drag its outlined square, or focus the
+outline and hold arrow keys, to move the region shown on the playable right
+side. Shift moves the outline faster. Both windows are equally sized; the
+outline's side is 81.6% of a top-level square's side. **Show legal region** moves
+the outline to the current allowed area. Moves do not automatically reposition
+it. This layout reuses the smooth movement from `board-magnifier.html`; it does
+not load any recorded moves. The static magnifier remains a separate demo.
+In **Game & navigation settings → Navigation Controls**, the **Magnifiers**
+switch offers **0 / 1 / 2**, defaulting to **1**. **0** displays just the centered,
+non-playable whole-board overview. **1** retains the existing two-window layout.
+**2** displays three equal windows: the left outline selects the non-playable
+middle view, and the middle outline selects the playable right view. Both
+outlines support the same drag and arrow-key movement. Switching this setting
+preserves the match and outline positions; only starting a new game resets the
+outlines to the center. **Show legal region** positions both outlines in mode 2.
+The third panel permits finer presentation detail so Level-6 cells remain
+playable at desktop window sizes; rules and permissions still come from Python.
+On the overview, blue outlines the actual playable area. Purple outlines the
+successive routing areas: for example, current area `5 / 5 / 1` routes into
+`5 / 1`, then `1`, then the whole board as unspecified move digits accumulate.
+These scopes use the game's existing target resolver, including closed-board
+fallback, and update after each move. They describe routing from the current
+position; later choices and new closures can change the future scopes.
+The whole-board routing scope is implicit and has no purple outline. When play
+is unrestricted, the whole board receives the blue playable-area outline.
+
+Layout 6 combines a large main board, a reserved destination preview, and up to
+three live watched regions fitted side by side. Select a legal square to preview
+it, then use **Play selected move** to commit. **Pin destination** keeps the
+destination visible without discarding the candidate; **Pin current view** or
+the board address can watch another region. Watched views are read-only; use
+**Show in main** to examine them. Back/Forward and **Show legal region** return
+to the move area. This layout omits the minimap, hierarchy, and position picker.
+
+Use **Zoom to detail** to expose playable cells. **Show legal region** navigates
+explicitly to the actual permitted region. Back/Forward restores camera views;
+the overview navigates without playing. A board address such as `1 / 3 / 2`
+can be opened or pinned. Up to three live pins may accompany the main view.
+The second view supports its own zoom buttons, the shared navigation settings,
+Copy main, and Swap views. Pin panels can be resized vertically on desktop.
+
+**Square action** chooses direct Play or Preview. Hierarchy and Preview-on-demand
+layouts initially select Preview: selecting an available square checks the
+actual outgoing region and closures, without playing; **Play selected move**
+commits it. The destination panel is read-only and shows the current position
+before the hypothetical move. It does not recommend or rank moves.
+Game controls, navigation switches, move history and the existing position
+picker are inside **Game & navigation settings**. Wheel zoom, drag and edge
+movement retain their existing initial Off settings.
+
+All layouts share the original renderer, camera, Python rules, and AI session.
+A prototype-only sparse ink layer retains occupied locations and actual board
+results below the ordinary detail cutoff; dense overview marks may overlap.
+Layout controls reflow with the browser window; narrow windows use scrollable
+comparison panels. The normal `index.html` layout is not replaced. The page
+requires its neighboring JavaScript/CSS/Python files and the same initial
+runtime download as the normal game; it is not an offline standalone HTML.
 
 ### Terminal game
 

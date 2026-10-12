@@ -1,0 +1,30 @@
+/* Fixed overview and equal-sized playable detail: both use the same normalized crop. */
+#middle-lens-stage{display:none}
+body[data-layout="7"] main{--lens-side:min(calc((100vw - 60px)/2),calc(100dvh - 180px));grid-template-columns:repeat(2,var(--lens-side));grid-template-rows:var(--lens-side);justify-content:center;align-content:center;gap:20px}
+body[data-layout="7"] #workspace-rail{display:none}
+body[data-layout="7"] .lab-tools>:not(#show-legal):not(.lens-instructions){display:none}
+body[data-layout="7"] .lens-instructions{display:block;color:var(--muted)}
+body[data-layout="7"] #lens-stage{display:block;position:relative;width:100%;height:100%;background:var(--board-paper)}
+body[data-layout="7"] #magnifier-control{display:flex}
+body[data-layout="7"][data-magnifiers="0"] main{--lens-side:min(calc(100vw - 40px),calc(100dvh - 180px));grid-template-columns:var(--lens-side)}
+body[data-layout="7"][data-magnifiers="0"] .play-area,body[data-layout="7"][data-magnifiers="0"] #selection-lens,body[data-layout="7"][data-magnifiers="0"] #show-legal{display:none}
+body[data-layout="7"][data-magnifiers="2"] main{--lens-side:min(calc((100vw - 80px)/3),calc(100dvh - 180px));grid-template-columns:repeat(3,var(--lens-side))}
+body[data-layout="7"][data-magnifiers="2"] #middle-lens-stage{display:block;position:relative;width:100%;height:100%;background:var(--board-paper)}
+#middle-lens-board{display:block;width:100%;height:100%}
+#lens-overview{display:block;width:100%;height:100%}
+#selection-lens,#second-selection-lens{position:absolute;left:0;top:0;width:27.2%;aspect-ratio:1;background:transparent;touch-action:none;cursor:grab;will-change:transform}
+#selection-lens::after,#second-selection-lens::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 2px var(--ink);pointer-events:none}
+#selection-lens:active,#second-selection-lens:active{cursor:grabbing}#selection-lens:focus-visible,#second-selection-lens:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+body[data-layout="7"] #board-viewport{border:0;background:var(--board-paper)}
+/* Keep camera transforms on a composited surface and contain grid layout work. */
+body[data-layout="7"] #board{will-change:transform;contain:layout paint style}
+body[data-layout="7"] .board,body[data-layout="7"] .subboard{padding:0;border:0;gap:0;border-radius:0;background:var(--board-paper)}
+/* A single viewport canvas paints the same frames without thousands of pseudos. */
+body[data-layout="7"] .subboard{box-shadow:none}
+body[data-layout="7"] .subboard::after{display:none}
+/* Blue overview outlines already show permission; uniform green outlines hide depth. */
+body[data-layout="7"] .subboard.available{outline:none}
+body[data-layout="7"] .cell{box-shadow:none;border-radius:0}
+body[data-layout="7"] .cell.last{box-shadow:inset 0 0 0 2px var(--orange)}
+body[data-layout="7"] .cell .number{display:none}
+body[data-layout="7"] .cell:disabled:not(.x):not(.o){background:var(--board-paper)}

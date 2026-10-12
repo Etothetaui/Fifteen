@@ -14,10 +14,36 @@ let pickerPath = [], restorePickerFocus = false;
 const resetDialog = document.querySelector('#reset-dialog');
 const resetCancel = document.querySelector('#reset-cancel');
 let pendingReset = null;
-let selectedLevel;
+let selectedLevel = Number(document.documentElement?.dataset?.defaultLevels) || undefined;
+// Optional playtest consumers share this worker and renderer, never another match.
+const presentationRequests = new Map();
+let presentationObserver = null;
+function requestPresentation(payload) {
+  if (!ready || busy) return Promise.reject(new Error('The game is updating.'));
+  return new Promise((resolve, reject) => {
+    const id = ++sequence;
+    presentationRequests.set(id, {resolve, reject, generation, revision: interactionRevision});
+    worker.postMessage({id, generation, channel: 'presentation', payload});
+  });
+}
+function cancelPresentationRequests() {
+  for (const request of presentationRequests.values()) request.reject(new Error('The position changed.'));
+  presentationRequests.clear();
+}
 const playerOptions = [...modes.querySelectorAll('.player-options')];
 let worker, state, ready = false, busy = true, generation = 0, sequence = 0, timer;
 let boardFocusPath = '', restoreBoardFocus = false;
+let viewTimer = null, viewRequest = 0, inspectRequest = 0, viewKey = '';
+let interactionRevision = 0;
+let loadedView = null, requestedView = null, actionView = null;
+// The subdivision threshold comes from Python, via the worker.
+let detailThreshold;
+function detailDepth(view) { return Math.floor(Math.log(view.pixels / (view.detailThreshold || detailThreshold)) / Math.log(3)); }
+function hasLoadedDetail(view) {
+  return detailThreshold && loadedView && detailDepth(view) === detailDepth(loadedView) &&
+    view.left >= loadedView.left && view.top >= loadedView.top &&
+    view.right <= loadedView.right && view.bottom <= loadedView.bottom;
+}
 board.tabIndex = -1;
 // Coordinates describe visual placement only. Python remains the authority on legality.
 function visualPosition(path) {
@@ -77,6 +103,15 @@ function renderLevelSelection() {
   });
 }
 function send(payload) {
+  cancelPresentationRequests();
+  // Presentation replies from before a move cannot restore stale permissions.
+  viewRequest = inspectRequest = 0;
+  viewKey = '';
+  interactionRevision++;
+  loadedView = null;
+  actionView = null;
+  if (state?.levels > 3 && typeof boardCamera !== 'undefined' && payload.action !== 'new') payload.view = boardCamera.view();
+  if (payload.view) actionView = payload.view;
   busy = true;
   if (board.contains(document.activeElement)) {
     restoreBoardFocus = true;
@@ -96,9 +131,36 @@ function restart() {
   if (!Number.isSafeInteger(count)) return;
   clearTimeout(timer); generation++;
   pickerPath = [];
+  if (typeof boardCamera !== 'undefined') boardCamera.setLevels(count);
   // Old replies cannot redraw a board or schedule moves after a restart.
   statusText.textContent = 'Starting a new game…';
-  send({action: 'new', mode: selectedMode(), levels: count, players: selectedPlayers()});
+  const payload = {action: 'new', mode: selectedMode(), levels: count, players: selectedPlayers()};
+  if (count > 3 && typeof boardCamera !== 'undefined') payload.view = boardCamera.view();
+  send(payload);
+}
+
+function queueView() {
+  if (!state || state.levels <= 3 || typeof boardCamera === 'undefined' || viewTimer !== null) return;
+  // Throttle continuously moving cameras, allowing one read-only request in flight.
+  viewTimer = setTimeout(() => {
+    viewTimer = null;
+    if (!ready || busy || pendingReset || viewRequest || state.levels <= 3) return;
+    // Reuse the loaded overscan region until it is exhausted or detail changes.
+    if (hasLoadedDetail(boardCamera.view(0))) return;
+    const view = boardCamera.view(), key = JSON.stringify(view);
+    if (key === viewKey) return;
+    viewKey = key;
+    viewRequest = ++sequence;
+    requestedView = view;
+    worker.postMessage({id: viewRequest, generation, channel: 'view', payload: {action: 'view', view}});
+  }, 100);
+}
+
+function inspectPicker(path) {
+  if (!ready || busy || inspectRequest) return;
+  pickerGrid.querySelectorAll('button').forEach(button => button.disabled = true);
+  inspectRequest = ++sequence;
+  worker.postMessage({id: inspectRequest, generation, channel: 'inspect', payload: {action: 'inspect', path}});
 }
 function requestRestart(applySelection = () => {}) {
   if (!ready || pendingReset) return;
@@ -143,8 +205,8 @@ function playNode(node) {
 }
 function renderPicker(focus = false) {
   if (!state) return;
-  let node = state.tree;
-  for (const index of pickerPath) node = node.children[index];
+  let node = state.picker || state.tree;
+  if (!state.picker) for (const index of pickerPath) node = node.children[index];
   const keepFocus = focus || (restorePickerFocus && picker.open && (picker.contains(document.activeElement) || document.activeElement === document.body));
   const selectingBoard = node.children[0].kind === 'board';
   document.querySelector('#picker-label').textContent = `${selectingBoard ? 'Choose a board' : 'Play a square'}${pickerPath.length ? ` in board ${pathText(pickerPath)}` : ''}.`;
@@ -156,6 +218,7 @@ function renderPicker(focus = false) {
     button.addEventListener('click', () => {
       if (!canPlay(child)) return;
       if (child.kind === 'cell') playNode(child);
+      else if (state.picker) inspectPicker(child.path);
       else { pickerPath = child.path; renderPicker(true); }
     });
     return button;
@@ -168,41 +231,77 @@ function renderPicker(focus = false) {
     restorePickerFocus = true;
   }
 }
-pickerBack.addEventListener('click', () => { pickerPath = pickerPath.slice(0, -1); renderPicker(true); });
+pickerBack.addEventListener('click', () => {
+  const path = pickerPath.slice(0, -1);
+  if (state?.picker) inspectPicker(path);
+  else { pickerPath = path; renderPicker(true); }
+});
 picker.addEventListener('toggle', () => { if (!picker.open) restorePickerFocus = false; });
-function renderNode(node, root = false) {
-  const element = root ? board : document.createElement(node.kind === 'board' ? 'div' : 'button');
+function renderNode(node, root = false, previous = null, targetBoard = board, lines = winningLines) {
+  const element = root ? targetBoard : previous?._viewKind === node.kind ? previous
+    : document.createElement(node.kind === 'board' ? 'div' : 'button');
+  // Viewport replies often contain identical detail. Keep those DOM subtrees,
+  // including focus and listeners, rather than rebuilding them during motion.
+  const key = JSON.stringify([node, interactionRevision, busy, state.computer_turn, state.over, document.body.dataset.layout]);
+  if (element._viewKey === key) return element;
+  element._viewKey = key;
+  element._viewKind = node.kind;
+  element._viewNode = node;
   if (node.kind === 'cell') {
     element.className = `cell ${node.mark.toLowerCase()}${node.winning ? ' winning' : ''}${node.last ? ' last' : ''}`;
-    const number = document.createElement('span'); number.className = 'number';
-    number.textContent = node.path.at(-1) + 1; number.setAttribute('aria-hidden', 'true');
-    const mark = document.createElement('span'); mark.className = 'mark';
-    mark.textContent = node.mark; mark.setAttribute('aria-hidden', 'true');
-    element.append(number, mark);
+    // The lens hides numbers; avoid thousands of invisible spans in deep games.
+    // Keep the actual buttons and Python-derived permissions unchanged.
+    const lensOnly = document.body.dataset.layout === '7';
+    if (!lensOnly || element._number) {
+      const number = element._number || document.createElement('span'); number.className = 'number';
+      number.textContent = node.path.at(-1) + 1; number.setAttribute('aria-hidden', 'true');
+      if (!element._number) element.append(number);
+      element._number = number;
+    }
+    if (node.mark || !lensOnly || element._mark) {
+      const mark = element._mark || document.createElement('span'); mark.className = 'mark';
+      mark.textContent = node.mark; mark.setAttribute('aria-hidden', 'true');
+      if (!element._mark) element.append(mark);
+      element._mark = mark;
+    }
+    if (!element._cellBound) {
+      element.addEventListener('click', () => playNode(element._viewNode));
+      element._cellBound = true;
+    }
     element.disabled = !canPlay(node);
     element.tabIndex = -1;
     element.dataset.path = node.path.join('/');
     [element.dataset.row, element.dataset.column] = visualPosition(node.path);
     element.setAttribute('aria-label', `Position ${pathText(node.path)}, ${node.mark || 'empty'}${node.winning ? ', winning line' : ''}${node.last ? ', last move' : ''}`);
-    element.addEventListener('click', () => playNode(node));
   } else {
     element.className = root ? 'board' : `subboard${node.allowed ? ' available' : ''}${node.winning ? ' winning' : ''}`;
     element.classList.toggle('nested', node.levels > 1);
+    element.classList.toggle('collapsed', Boolean(node.collapsed));
+    // Expose remaining hierarchy depth for presentation at any game level.
+    element.dataset.levels = node.levels;
     element.setAttribute('role', 'group');
     element.setAttribute('aria-label', node.path.length ? `Board ${pathText(node.path)}` : 'Tic-tac-toe board');
-    element.replaceChildren(...node.children.map(child => renderNode(child)));
-    winningLines.add(element, node);
-    if (node.result !== null && !root) {
-      const result = document.createElement('span'); result.className = 'board-result';
-      result.textContent = resultSymbol(node.result);
-      result.setAttribute('aria-label', node.result ? `${result.textContent} wins board ${pathText(node.path)}` : `Board ${pathText(node.path)} drawn`);
-      element.append(result);
+    const old = element._viewChildren || [];
+    const children = node.children.map((child, index) => renderNode(child, false, old[index], targetBoard, lines));
+    const decoration = JSON.stringify([node.result, node.children.map(child => child.winning)]);
+    if (children.length !== old.length || children.some((child, index) => child !== old[index]) ||
+        decoration !== element._decoration) {
+      element.replaceChildren(...children);
+      lines.add(element, node);
+      if (node.result !== null && !root) {
+        const result = document.createElement('span'); result.className = 'board-result';
+        result.textContent = resultSymbol(node.result);
+        result.setAttribute('aria-label', node.result ? `${result.textContent} wins board ${pathText(node.path)}` : `Board ${pathText(node.path)} drawn`);
+        element.append(result);
+      }
     }
+    element._viewChildren = children; element._decoration = decoration;
   }
   return element;
 }
 function renderBoard() {
   // All exposed levels use the same recursive renderer and Python permissions.
+  winningLines.setLevels(state.levels);
   const keepFocus = restoreBoardFocus && (board.contains(document.activeElement) || document.activeElement === document.body);
   renderNode(state.tree, true);
   winningLines.refresh();
@@ -215,7 +314,7 @@ function renderBoard() {
 }
 function render() {
   statusText.textContent = state.status;
-  substatus.textContent = state.over ? 'Game over.' : state.computer_turn ? '' : state.instruction;
+  substatus.textContent = state.over ? 'Game over.' : state.instruction;
   document.querySelector('#version').textContent = `v${state.version}`;
   document.querySelector('#move-count').textContent = `MOVE ${String(state.history.length).padStart(2,'0')} / ${state.capacity.padStart(2,'0')}`;
   renderBoard();
@@ -223,6 +322,8 @@ function render() {
   renderPicker();
   document.querySelector('#history').textContent = state.history.length ? state.history.map(m => `${m.mark} → ${Array.isArray(m.square) ? m.square.join(' / ') : m.square}`).join('  ·  ') : 'No moves yet.';
   scheduleComputerTurn();
+  queueView();
+  if (typeof presentationObserver === 'function') presentationObserver(state);
 }
 function scheduleComputerTurn() {
   clearTimeout(timer);
@@ -247,12 +348,13 @@ function fail(error, stage) {
   retry.hidden = false;
 }
 function boot() {
+  cancelPresentationRequests();
   if (worker) worker.terminate();
   clearTimeout(timer); generation++; ready = false; busy = true;
   modes.disabled = true; levels.disabled = true; newGame.disabled = true;
   retry.hidden = true; statusText.textContent = 'Loading…';
   substatus.textContent = 'Starting…';
-  const currentWorker = new Worker('python-worker.js');
+  const currentWorker = new Worker('python-worker.js?ui=deep-performance');
   worker = currentWorker;
   currentWorker.onerror = event => { if (worker === currentWorker) fail(event.message); };
   currentWorker.onmessage = ({data}) => {
@@ -272,6 +374,7 @@ function boot() {
     if (data.ready) {
       // Python owns both the default depth and the available UI choices.
       if (!data.levels.includes(selectedLevel)) selectedLevel = data.defaultLevels;
+      detailThreshold = data.detailThreshold;
       levels.querySelectorAll('button').forEach(button => button.remove());
       levels.querySelector('.level-options').append(...data.levels.map(value => {
         const button = document.createElement('button'); button.type = 'button';
@@ -284,16 +387,50 @@ function boot() {
       ready = true; modes.disabled = false; levels.disabled = false; newGame.disabled = false; restart(); return;
     }
     if (data.generation !== generation) return;
+    if (data.channel === 'presentation') {
+      const request = presentationRequests.get(data.id);
+      presentationRequests.delete(data.id);
+      if (!request) return;
+      if (request.generation !== generation || request.revision !== interactionRevision || data.error)
+        request.reject(new Error(data.error || 'The position changed.'));
+      else request.resolve(data.state);
+      return;
+    }
+    if (data.channel === 'view' || data.channel === 'inspect') {
+      const inspection = data.channel === 'inspect';
+      if (data.id !== (inspection ? inspectRequest : viewRequest)) return;
+      if (inspection) inspectRequest = 0; else viewRequest = 0;
+      if (data.error) {
+        console.error(data.error);
+        if (inspection) renderPicker();
+        return;
+      }
+      if (inspection) {
+        state.picker = data.state.picker;
+        pickerPath = state.picker.path;
+        renderPicker(true);
+      } else {
+        loadedView = requestedView;
+        state.tree = data.state.tree;
+        if (typeof boardCamera !== 'undefined') boardCamera.commitDetail();
+        renderBoard();
+        queueView();
+      }
+      return;
+    }
     if (data.error) {
       busy = false;
       if (state) { render(); substatus.textContent = data.error; }
       else fail(data.error);
       return;
     }
-    state = data.state; busy = false; render();
+    state = data.state; loadedView = actionView; busy = false;
+    if (typeof boardCamera !== 'undefined') boardCamera.commitDetail();
+    render();
   };
 }
 playerOptions.forEach(group => group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => changePlayer(group, button))));
 newGame.addEventListener('click', () => requestRestart());
 retry.addEventListener('click', boot);
+if (typeof boardCamera !== 'undefined') boardCamera.onChange = queueView;
 boot();

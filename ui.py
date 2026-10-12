@@ -2,15 +2,21 @@
 
 import argparse
 import json
+import math
 from fifteen import GameSession, MODES, DEFAULT_LEVELS
 from version import __version__
 
-UI_LEVELS = (1, 2, 3)
+# Presentation choices reuse the game's existing arbitrary-depth recursive rules.
+UI_LEVELS = (1, 2, 3, 4, 5, 6)
+# Expand a leaf board only when its nine cells are roughly 32px wide.
+# This bounds visible DOM density independently of total game capacity.
+DETAIL_THRESHOLD = 96
 
 
 class GameUI:
     def __init__(self):
         self.session = GameSession()
+        self.view = {"left": 0, "top": 0, "right": 1, "bottom": 1, "pixels": 600}
 
     def new_game(self, mode, levels=DEFAULT_LEVELS, players=None):
         if type(levels) is not int or levels not in UI_LEVELS:
@@ -34,13 +40,20 @@ class GameUI:
             0 if cells[1] - cells[0] == 1 else
             1 if cells[1] - cells[0] == 3 else 2, cells), default=())) if node else []
 
-    def board_view(self, node, levels, path):
+    def board_view(self, node, levels, path, *, detail=None, depth=None, bounds=(0, 0, 1)):
         """Format the recursive state; all permissions and results come from the game."""
         position = self.session.position
         allowed = position.allows_prefix(path)
         result = node.result if node else None
         data = {"kind": "board", "path": list(path), "levels": levels,
                 "allowed": allowed, "result": result}
+        left, top, size = bounds
+        # Cull presentation detail, never game state. Python still supplies each
+        # collapsed board's permissions/result and all visible leaf permissions.
+        outside = detail is not None and (left + size < detail["left"] or
+            left > detail["right"] or top + size < detail["top"] or top > detail["bottom"])
+        if depth == 0 or (detail is not None and (outside or size * detail["pixels"] < detail.get("detailThreshold", DETAIL_THRESHOLD))):
+            return data | {"children": [], "collapsed": True}
         winning = self.winning_display(node)
         marks = node.board if node else [0] * 9
         children = []
@@ -56,11 +69,89 @@ class GameUI:
                          "last": child_path == last_path}
             else:
                 child = self.board_view(node.children.get(index) if node else None,
-                                        levels - 1, child_path)
+                    levels - 1, child_path, detail=detail,
+                    depth=None if depth is None else depth - 1,
+                    bounds=(left + index % 3 * size / 3,
+                            top + index // 3 * size / 3, size / 3))
             child["winning"] = index in winning
             children.append(child)
         data["children"] = children
         return data
+
+    def set_view(self, view):
+        """Validate normalized viewport geometry; it cannot change the match."""
+        fields = ("left", "top", "right", "bottom", "pixels")
+        if not isinstance(view, dict) or any(type(view.get(key)) not in (int, float) or
+                not math.isfinite(view[key]) for key in fields):
+            raise ValueError("Invalid board viewport.")
+        if not (0 <= view["left"] <= view["right"] <= 1 and
+                0 <= view["top"] <= view["bottom"] <= 1 and 0 < view["pixels"]):
+            raise ValueError("Invalid board viewport.")
+        # A lens can expose smaller cells without changing any game permissions.
+        if "detailThreshold" in view:
+            threshold = view["detailThreshold"]
+            if type(threshold) not in (int, float) or not math.isfinite(threshold) or not 12 <= threshold <= DETAIL_THRESHOLD:
+                raise ValueError("Invalid board detail threshold.")
+        self.view = {key: view[key] for key in fields}
+        if "detailThreshold" in view:
+            self.view["detailThreshold"] = threshold
+
+    def visible_tree(self):
+        position = self.session.position
+        return self.board_view(position.root, position.levels, (),
+                               detail=self.view if position.levels > 3 else None)
+
+    def inspect(self, path):
+        """One picker layer, using the same renderer and authoritative permissions."""
+        position = self.session.position
+        if not isinstance(path, list) or len(path) >= position.levels or any(
+                type(index) is not int or not 0 <= index < 9 for index in path):
+            raise ValueError("Invalid board path.")
+        return self.board_view(position.board_at(tuple(path)), position.levels - len(path),
+                               tuple(path), depth=1)
+
+    def overview(self):
+        """Sparse actual results for auxiliary views; never expand empty capacity."""
+        results = []
+        pending = [((), self.session.position.root)]
+        while pending:
+            path, node = pending.pop()
+            if node.result is not None:
+                results.append({"path": list(path), "result": node.result})
+            pending.extend((path + (index,), child) for index, child in node.children.items())
+        return {"results": results}
+
+    def preview(self, path):
+        """Read hypothetical routing using the game's existing reversible move."""
+        position = self.session.position
+        path = position.move_path(path)
+        before = [(path[:depth], getattr(position.board_at(path[:depth]), "result", None))
+                  for depth in range(position.levels)]
+        # No session history/last-move mutation, and restore even if formatting fails.
+        token = position.play(path)
+        try:
+            closures = [{"path": list(prefix), "result": position.board_at(prefix).result}
+                        for prefix, previous in before
+                        if previous is None and position.board_at(prefix).result is not None]
+            return {"forced": list(position.forced), "outcome": position.outcome(), "closures": closures}
+        finally:
+            position.undo(token)
+
+    def routing_areas(self):
+        """Successive destination scopes using the existing target resolver.
+
+        The unspecified move digits range over each scope. Later choices and
+        closures can change these scopes; this is not a prediction of moves.
+        """
+        position = self.session.position
+        if position.outcome() is not None:
+            return []
+        area = position.forced
+        scopes = []
+        while area:
+            area = position.resolve_target(area[1:])
+            scopes.append(list(area))
+        return scopes
 
     def snapshot(self):
         board = self.session.position.board
@@ -85,7 +176,9 @@ class GameUI:
                 "levels": position.levels, "default_levels": DEFAULT_LEVELS,
                 "capacity": str(9 ** position.levels), "instruction": instruction,
                 "forced": list(position.forced),
-                "tree": self.board_view(position.root, position.levels, ()),
+                "routing_areas": self.routing_areas(),
+                "tree": self.visible_tree(),
+                "picker": self.inspect([]) if position.levels > 3 else None,
                 "board": ["X" if cell == 1 else "O" if cell == -1 else "" for cell in board],
                 "status": status, "turn": mark, "over": over,
                 "computer_turn": computer, "winning": winning,
@@ -103,6 +196,8 @@ def dispatch(payload):
     if controller is None:
         controller = GameUI()
     request = json.loads(payload)
+    if "view" in request:
+        controller.set_view(request["view"])
     action = request.get("action")
     if action == "new":
         result = controller.new_game(request.get("mode"), request.get("levels", DEFAULT_LEVELS),
@@ -111,6 +206,14 @@ def dispatch(payload):
         result = controller.play(request.get("square"))
     elif action == "computer":
         result = controller.computer_move()
+    elif action == "view":
+        result = {"tree": controller.visible_tree()}
+    elif action == "inspect":
+        result = {"picker": controller.inspect(request.get("path"))}
+    elif action == "overview":
+        result = controller.overview()
+    elif action == "preview":
+        result = controller.preview(request.get("path"))
     else:
         raise ValueError("Unknown game action.")
     return json.dumps(result)

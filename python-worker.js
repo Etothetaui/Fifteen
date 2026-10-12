@@ -19,9 +19,9 @@ async function initialize() {
     py.FS.writeFile(name, await response.text());
   }
   loading('game-start');
-  py.runPython('from ui import dispatch, UI_LEVELS\nfrom fifteen import DEFAULT_LEVELS');
+  py.runPython('from ui import dispatch, UI_LEVELS, DETAIL_THRESHOLD\nfrom fifteen import DEFAULT_LEVELS');
   dispatch = py.globals.get('dispatch');
-  self.postMessage({ready: true, defaultLevels: py.globals.get('DEFAULT_LEVELS'), levels: JSON.parse(py.runPython('import json; json.dumps(UI_LEVELS)'))});
+  self.postMessage({ready: true, defaultLevels: py.globals.get('DEFAULT_LEVELS'), detailThreshold: py.globals.get('DETAIL_THRESHOLD'), levels: JSON.parse(py.runPython('import json; json.dumps(UI_LEVELS)'))});
 }
 const ready = initialize();
 ready.catch(error => self.postMessage({fatal: true, stage, error: String(error)}));
@@ -31,9 +31,9 @@ self.onmessage = ({data}) => {
   queue = queue.then(() => {
     try {
       const state = JSON.parse(dispatch(JSON.stringify(data.payload)));
-      self.postMessage({id: data.id, generation: data.generation, state});
+      self.postMessage({id: data.id, generation: data.generation, channel: data.channel, state});
     } catch (error) {
-      self.postMessage({id: data.id, generation: data.generation, error: String(error)});
+      self.postMessage({id: data.id, generation: data.generation, channel: data.channel, error: String(error)});
     }
   });
 };
