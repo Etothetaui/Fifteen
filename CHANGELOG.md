@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.1-dev
+
+- Draw the world-coordinate selector in every existing board view and refresh
+  the cached overview on selector movement, so off-crop selection stays visible.
+- Keep selector movement independent of magnifiers and stop it at the current
+  playable scope's boundary, including when the selected square is offscreen.
+- Start the move selector at the central square and move arrows one adjacent
+  grid square at a time, without skipping occupied/unavailable positions.
+  Preserve the selector through detail redraws and reuse Python inspection
+  for keyboard play when leaf buttons are not loaded.
+- Smooth magnifier keyboard zoom with frame-timed proportional scale changes,
+  independent of key repeat, preserving existing key directions and limits.
+- Preserve the current zoom during automatic legal-area following; fitting
+  the region remains an explicit action.
+- Add Go to legal area in the header to reposition without changing zoom.
+- Add overview click/tap positioning, independently adjustable magnifiers,
+  and level-independent readable detail matching the original Level 3 crop.
+- Add Fit legal area, Last move and Return actions; retain both magnifiers,
+  with WASD/QE and TFGH/RY controls, arrows for move selection and Space to play.
+- Add optional destination outlines in the existing board views using Python's
+  preview, with explicit confirmation and stale-response protection.
+- Refresh the winning-line renderer's cache identifier in both browser pages
+  so returning browsers load the renderer required by the current board UI.
+
 ## 0.3.0-dev
 
 - Integrate the overview/magnifier layout into the main game. Default to Level 1,

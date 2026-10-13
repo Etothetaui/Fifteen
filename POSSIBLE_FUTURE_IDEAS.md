@@ -17,6 +17,44 @@ Use a descriptive heading and the following fields for each idea:
   before accepting the change.
 - **Decision / next step:** Record the user's decision and what must happen next.
 
+## Navigation
+
+### Optional live reference for a distant region
+
+- **Status:** Proposed.
+- **Problem / evidence:** The Level 4 playstudy required repeated comparisons
+  between a local candidate and distant routing destinations or prepared
+  opportunities. A player may want to remember one region while moving the
+  main magnifier elsewhere. Research supports testing external references,
+  but does not establish that another permanent panel improves this game.
+  See [navigation research](research/navigation-improvements-followup.md)
+  and [human-factors evidence](research/navigation-human-factors-followup.md).
+- **Possible approach:** Let the player choose one region to retain in an
+  optional, small, read-only reference card. Mark its location and identity
+  in the overview, keep it fixed while the main magnifier moves, and update
+  its contents after each move. It is a live reference, not a frozen screenshot
+  or another stage in the magnifier chain. Allow hiding/removing it. Reuse
+  existing prototype region/pin helpers, shared rendering, and authoritative
+  Python state. The [rough sketch](research/live-reference-sketch.png) and
+  [editable SVG](research/live-reference-sketch.svg) illustrate the idea;
+  placement and size are not settled requirements.
+- **Affected behavior / tradeoffs:** Could reduce repeated travel and memory
+  demands, but consumes space and adds rendering work. Preserve readable
+  playable boards, mobile navigation, and the existing magnifier controls.
+  The reference must never accept moves, imply strategic importance, or
+  misrepresent legal access. When an ancestor closes, visibly indicate that
+  the remembered region is unavailable rather than retaining a stale opportunity.
+  Game rules and both AI implementations remain unchanged.
+- **Validation required:** Compare navigation effort, board-identity mistakes,
+  factual comparison accuracy, clutter, and responsiveness with and without
+  the reference at L4–L6 and higher levels where practical. Test populated
+  regions, ancestor closures, moves/restarts during pending updates, duplicate
+  references, resizing, and phone portrait/landscape. Verify current-state
+  updates and prevent stale replies or accidental move input.
+- **Decision / next step:** On 2026-10-13, the user requested recording this
+  idea after reviewing the rough sketch. Implementation is not approved.
+  Discuss card placement, selection, and visibility before implementing it.
+
 ## Experimental bot
 
 Ideas in this section are proposals, not authorization to change the bot.

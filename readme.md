@@ -33,7 +33,8 @@ Loaded detail is reused until the viewer leaves its buffer or reaches a new
 subdivision size. Detail density depends on the viewer size rather than total capacity.
 **Game & navigation settings** opens the player selectors, level buttons,
 move history, rules help, position picker and Navigation Controls. **New game**,
-**Show legal region**, and **Zoom all the way out** are in the header. The zoom-out
+**Go to legal area**, **Fit legal area**, **Readable detail**, **Last move**,
+**Return**, and **Zoom all the way out** are in the header. The zoom-out
 button is available with zero magnifiers. Status and instructions
 stays above the boards. Changing players or level confirms before ending an
 unfinished match that has moves. Empty and finished games restart immediately.
@@ -43,14 +44,44 @@ unfinished match that has moves. Empty and finished games restart immediately.
 1 displays a non-playable whole-board overview and its playable magnified crop.
 2 adds a second selection outline on the non-playable middle board; only the
 third board is playable. Drag either outline with a mouse or touch, or focus it
-and hold arrow keys; Shift moves faster. **Show legal region** explicitly
-positions the relevant view or outlines. **Auto-show legal region** offers
+use WASD for the first and TFGH for the second; Shift moves faster. Click or tap
+outside an outline on its non-playable source board to position it there.
+Hold Q/E to smoothly zoom the first out/in, and R/Y to zoom the second out/in.
+The initial first crop matches the original Level 3 cell density
+at other depths. The second magnifier remains available with independent zoom.
+The move selector starts at the central square. Arrow keys move it one adjacent
+grid square at a time, across subboard boundaries, without skipping occupied or
+unavailable squares or wrapping. It stops at the current playable area's
+boundary, regardless of the magnifier position, and can move through squares
+outside the magnified view. It remains visible on the whole-board overview even
+if it leaves the magnified crop.
+When routing changes the area, an outside selector
+is clamped into it without moving or zooming the camera. Home/End select that
+area's first/last squares. Space plays only a legal empty
+square, using Python's permissions even when leaf buttons are not loaded.
+These shortcuts are inactive while settings or restart dialogs
+are open. **Go to legal area** centers the view or magnifiers on the legal area
+without changing zoom. **Fit legal area** fits the full permitted region, including broader
+freedom after closures. **Readable detail** restores the original Level 3 view's
+number of visible cells at the inspected world location. **Last move** shows the
+opponent's latest move at readable scale in a one-human match (the latest move
+in two-human or spectator matches); **Return** restores the saved view, including
+both magnifier centers and zooms, without undoing moves. New games clear the
+return location. **Auto-show legal region** offers
 **Off** (default), **Before human move**, and **After all moves**. Before human
 move repositions after a move only when the next player is human; After all
-moves repositions after each move. Finished games keep their final view.
+moves repositions after each move. Automatic following preserves the current
+zoom, including each magnifier's crop size; only the explicit Fit legal area
+action changes zoom to fit the legal region. Finished games keep their final view.
 Turning the setting on does not immediately reposition the board, and starting
 a new game uses the normal initial view. Instruction text stays visible during
 computer turns to keep the board size stable.
+**Move input** offers Play (default) or Preview in settings. Play uses immediate
+cell clicks. Preview selects a cell without placing a mark and adds a dashed
+gold outline around its actual next destination in the existing board views,
+using Python's reversible preview. No separate preview panel is shown.
+Use Space or click/tap the selected square again to commit the move.
+New selections supersede old requests, and moves/restarts invalidate candidates.
 **Routing outlines** starts Off. On adds alternating light/dark purple outlines
 for successive destination areas. Whole-board routing is implicit and omitted.
 Blue indicates the current playable area, and the latest move stays marked.
@@ -178,6 +209,11 @@ Fonts with local fallbacks. No game data is sent to a Python server.
 
 The page uses relative paths and `.nojekyll` for GitHub Pages hosting from the
 `main` branch's root directory. No backend server is needed.
+
+When changing browser scripts or styles, update their cache identifiers in every
+page that loads them, including the worker URL when its implementation changes.
+Refresh `layout-playtest.zip` as well. A new page must not reuse an older cached
+renderer that lacks methods required by its UI.
 
 ### Separate layout playtest
 

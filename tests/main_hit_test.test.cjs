@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function harness({allowed=true,mark='',reject=false}={}) {
   const inspected=[],played=[];let handler;
-  const context=vm.createContext({current:{levels:6,computer_turn:false,over:false},busy:false,
+  const context=vm.createContext({current:{levels:6,computer_turn:false,over:false},busy:false,previewMode:false,
     boardCamera:{x:-200,y:-100,size:800},
     mainViewport:{getBoundingClientRect:()=>({left:40,top:60}),addEventListener(type,fn){handler=fn;}},
     async requestPresentation(payload){
@@ -14,6 +14,7 @@ function harness({allowed=true,mark='',reject=false}={}) {
     },playNode(node){played.push(node);}});
   vm.runInContext(fs.readFileSync('board-ink.js','utf8'),context);
   const source=fs.readFileSync('magnifier-game.js','utf8');
+  vm.runInContext(source.slice(source.indexOf('  async function inspectCellPath('),source.indexOf('  async function inspectSelection(')),context);
   const start=source.indexOf("  mainViewport.addEventListener('click'");
   const end=source.indexOf("  document.addEventListener('wheel'",start);
   vm.runInContext(source.slice(start,end),context);

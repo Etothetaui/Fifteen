@@ -33,6 +33,7 @@ function cancelPresentationRequests() {
 const playerOptions = [...modes.querySelectorAll('.player-options')];
 let worker, state, ready = false, busy = true, generation = 0, sequence = 0, timer;
 let boardFocusPath = '', restoreBoardFocus = false;
+let showMoveSelector = false;
 let viewTimer = null, viewRequest = 0, inspectRequest = 0, viewKey = '';
 let interactionRevision = 0;
 let loadedView = null, requestedView = null, actionView = null;
@@ -50,9 +51,9 @@ function visualPosition(path) {
   return path.reduce(([row, column], square) => [row * 3 + Math.floor(square / 3), column * 3 + square % 3], [0, 0]);
 }
 function availableCells() { return [...board.querySelectorAll('button')].filter(cell => !cell.disabled); }
-function setBoardEntry(cell) {
+function setBoardEntry(cell,preserveSelection=false) {
   board.querySelectorAll('button').forEach(button => button.tabIndex = button === cell ? 0 : -1);
-  if (cell) boardFocusPath = cell.dataset.path;
+  if (cell && !preserveSelection) boardFocusPath = cell.dataset.path;
 }
 function keyboardTarget(cells, current, key) {
   const ordered = [...cells].sort((a, b) => Number(a.dataset.row) - Number(b.dataset.row) || Number(a.dataset.column) - Number(b.dataset.column));
@@ -130,6 +131,7 @@ function restart() {
   const count = selectedLevel;
   if (!Number.isSafeInteger(count)) return;
   clearTimeout(timer); generation++;
+  if(showMoveSelector) boardFocusPath=Array(count).fill(4).join('/');
   pickerPath = [];
   if (typeof boardCamera !== 'undefined') boardCamera.setLevels(count);
   // Old replies cannot redraw a board or schedule moves after a restart.
@@ -248,7 +250,7 @@ function renderNode(node, root = false, previous = null, targetBoard = board, li
   element._viewKind = node.kind;
   element._viewNode = node;
   if (node.kind === 'cell') {
-    element.className = `cell ${node.mark.toLowerCase()}${node.winning ? ' winning' : ''}${node.last ? ' last' : ''}`;
+    element.className = `cell ${node.mark.toLowerCase()}${node.winning ? ' winning' : ''}${node.last ? ' last' : ''}${showMoveSelector && !state.computer_turn && node.path.join('/')===boardFocusPath ? ' move-selected' : ''}`;
     // The lens hides numbers; avoid thousands of invisible spans in deep games.
     // Keep the actual buttons and Python-derived permissions unchanged.
     const lensOnly = document.body.dataset.layout === '7';
@@ -307,8 +309,9 @@ function renderBoard() {
   winningLines.refresh();
   const cells = availableCells();
   const entry = cells.find(cell => cell.dataset.path === boardFocusPath) || keyboardTarget(cells, null, 'Home');
-  setBoardEntry(entry);
-  if (keepFocus) (entry || board).focus({preventScroll: true});
+  setBoardEntry(entry,showMoveSelector);
+  const selected=showMoveSelector?[...board.querySelectorAll('button')].find(cell=>cell.dataset.path===boardFocusPath):entry;
+  if (keepFocus) (selected && !selected.disabled ? selected : board).focus({preventScroll: true});
   document.querySelector('.play-area').dataset.levels = state.levels;
   document.querySelector('#board-title').textContent = `Level ${state.levels}`;
 }

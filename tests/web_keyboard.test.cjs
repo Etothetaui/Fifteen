@@ -287,6 +287,24 @@ test('unchanged viewport detail retains DOM nodes instead of rebuilding them whi
   assert.equal(h.board.cells[0], first);
 });
 
+test('main move selector survives detail redraws and disappears during unavailable turns',()=>{
+  const h=harness();h.context.snapshot={levels:1,tree:pickerTree(1),over:false,computer_turn:false};
+  h.run("state=snapshot;busy=false;showMoveSelector=true;boardFocusPath='4';renderNode(state.tree,true);");
+  assert.ok(h.board.cells[4].className.includes('move-selected'));
+  h.run('renderNode(JSON.parse(JSON.stringify(state.tree)),true);');
+  assert.ok(h.board.cells[4].className.includes('move-selected'));
+  h.run('state.computer_turn=true;renderNode(state.tree,true);');
+  assert.equal(h.board.cells[4].className.includes('move-selected'),false);
+});
+
+test('main-game restart starts the selector at the central square at each depth',()=>{
+  for(const level of [1,3,6]) {
+    const h=harness();h.context.level=level;
+    h.run('ready=true;selectedLevel=level;showMoveSelector=true;worker=new Worker();restart();');
+    assert.equal(h.run('boardFocusPath'),Array(level).fill(4).join('/'));
+  }
+});
+
 test('retained cells update marks, permissions and click data after a move or failed request', () => {
   const h = harness();
   h.context.snapshot = {levels: 4, tree: pickerTree(2), over: false, computer_turn: false};

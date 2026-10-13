@@ -51,3 +51,47 @@ test('point hit-testing handles deep-board corners without truncating the last c
     assert.deepEqual(Array.from(context.boardPathAt(.5,.5,depth)),Array(depth).fill(4));
   }
 });
+
+test('destination outline maps into overview and magnified views, including root freedom and tiny regions',()=>{
+  for(const destination of [[],[0,0,0,0,0],Array(12).fill(0)]) {
+    for(const camera of [null,{size:10800,x:-1200,y:-800}]) {
+      const {rects}=probe(6,false,{camera,destination});
+      const outline=rects.filter(r=>r.color==='#a5790c');assert.equal(outline.length,1);
+      assert.ok(outline[0].w>0&&outline[0].h>0);
+    }
+  }
+  assert.equal(probe(6,false).rects.some(r=>r.color==='#a5790c'),false);
+});
+
+test('selector arrows move exactly one grid square across recursive boundaries without wrapping',()=>{
+  const context=vm.createContext({});
+  const web=fs.readFileSync('web.js','utf8');
+  vm.runInContext(web.slice(web.indexOf('function visualPosition('),web.indexOf('function availableCells(')),context);
+  vm.runInContext(fs.readFileSync('board-ink.js','utf8'),context);
+  for(const levels of [1,3,6,12]) {
+    const center=Array(levels).fill(4),position=context.visualPosition(center);
+    for(const [key,dr,dc] of [['ArrowLeft',0,-1],['ArrowRight',0,1],['ArrowUp',-1,0],['ArrowDown',1,0]]) {
+      assert.deepEqual(Array.from(context.visualPosition(context.boardArrowPath(center,key))),[position[0]+dr,position[1]+dc]);
+    }
+    assert.equal(context.boardArrowPath(Array(levels).fill(0),'ArrowLeft'),null);
+    assert.equal(context.boardArrowPath(Array(levels).fill(8),'ArrowRight'),null);
+    const start=context.boardPathAt((2+.5)/3**levels,(1+.5)/3**levels,levels);
+    if(levels>1) assert.deepEqual(Array.from(context.visualPosition(context.boardArrowPath(start,'ArrowRight'))),[1,3]);
+  }
+});
+
+test('selector respects Python supplied playable scope, independent of any viewport',()=>{
+  const context=vm.createContext({});const web=fs.readFileSync('web.js','utf8');
+  vm.runInContext(web.slice(web.indexOf('function visualPosition('),web.indexOf('function availableCells(')),context);
+  vm.runInContext(fs.readFileSync('board-ink.js','utf8'),context);
+  for(const depth of [2,4,6,12]) {
+    const scope=Array(depth-1).fill(4),first=[...scope,0],last=[...scope,8];
+    assert.equal(context.boardArrowPath(first,'ArrowLeft',scope),null);
+    assert.equal(context.boardArrowPath(first,'ArrowUp',scope),null);
+    assert.equal(context.boardArrowPath(last,'ArrowRight',scope),null);
+    assert.equal(context.boardArrowPath(last,'ArrowDown',scope),null);
+    assert.deepEqual(Array.from(context.boardArrowPath(first,'ArrowRight',scope)),[...scope,1]);
+    assert.deepEqual(Array.from(context.boardClampSelector(Array(depth).fill(0),scope)),first);
+    assert.deepEqual(Array.from(context.boardClampSelector(Array(depth).fill(8),scope)),last);
+  }
+});

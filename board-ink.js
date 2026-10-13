@@ -9,6 +9,21 @@ function boardPathAt(u, v, depth) {
     return path;
   }
 // Shared presentation geometry; Python remains the authority on rules and routing.
+function boardClampSelector(path,scope=[]) {
+  const count=3**path.length,stride=3**(path.length-scope.length),[r,c]=visualPosition(path),[sr,sc]=visualPosition(scope);
+  const row=Math.max(sr*stride,Math.min((sr+1)*stride-1,r)),column=Math.max(sc*stride,Math.min((sc+1)*stride-1,c));
+  return boardPathAt((column+.5)/count,(row+.5)/count,path.length);
+}
+function boardArrowPath(path,key,scope=[]) {
+  const delta={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[key];
+  if(!delta) return null;
+  const [row,column]=visualPosition(path),count=3**path.length,r=row+delta[0],c=column+delta[1];
+  if(r<0||c<0||r>=count||c>=count) return null;
+  const next=boardPathAt((c+.5)/count,(r+.5)/count,path.length);
+  // Scope is supplied by Python. This constrains presentation movement to its
+  // rectangle; occupancy and actual move legality still belong to the game.
+  return scope.every((square,index)=>next[index]===square)?next:null;
+}
 function boardRegionBounds(path) {
   const [row,column] = visualPosition(path), extent = 3 ** path.length;
   return {left:column/extent,top:row/extent,size:1/extent};
@@ -17,7 +32,7 @@ function boardLayerStroke(remaining, spacing) {
   // Grow with nesting depth, bounded by screen space rather than a level table.
   return Math.min(12,Math.max(1,Math.round(1.618 ** remaining-.618)),Math.max(.5,spacing*.18));
 }
-function paintBoardInk(canvas, {state:currentState, results=[], camera=null, permitted=currentState?.forced, fullBoard=false, readOnly=false, frames=false, routing=true, overviewCamera=null, threshold=96, blue=false} = {}) {
+function paintBoardInk(canvas, {state:currentState, results=[], camera=null, permitted=currentState?.forced, fullBoard=false, readOnly=false, frames=false, routing=true, overviewCamera=null, threshold=96, blue=false, destination=null, selectedPath=null} = {}) {
     if (!currentState) return;
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
@@ -145,6 +160,17 @@ function paintBoardInk(canvas, {state:currentState, results=[], camera=null, per
       context.strokeStyle = '#bd522e'; context.lineWidth = 1.5;
       const cx = x + (b.left + b.size / 2) * size, cy = y + (b.top + b.size / 2) * size;
       context.strokeRect(cx - Math.max(3, b.size * size / 2), cy - Math.max(3, b.size * size / 2), Math.max(6, b.size * size), Math.max(6, b.size * size));
+    }
+    if(destination!==null && !currentState.over) {
+      // The same normalized destination maps through each existing view. Tiny
+      // overview rectangles keep positive dimensions; offscreen ink is clipped.
+      const b=boardRegionBounds(destination),extent=b.size*size,inset=Math.min(1.5,extent/4);
+      context.strokeStyle='#a5790c';context.lineWidth=Math.min(3,extent/2);context.setLineDash([6,3]);
+      context.strokeRect(x+b.left*size+inset,y+b.top*size+inset,extent-2*inset,extent-2*inset);context.setLineDash([]);
+    }
+    if(selectedPath!==null) {
+      const b=boardRegionBounds(selectedPath),cx=x+(b.left+b.size/2)*size,cy=y+(b.top+b.size/2)*size,extent=Math.max(6,b.size*size);
+      context.strokeStyle='#bd522e';context.lineWidth=2;context.strokeRect(cx-extent/2,cy-extent/2,extent,extent);
     }
     if (!camera && !fullBoard && overviewCamera) {
       const view = overviewCamera.view(0); context.strokeStyle = '#243b32'; context.lineWidth = 2;
