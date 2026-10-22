@@ -61,7 +61,7 @@ test('initial view and reset show the whole board centered, without changing the
   assert.equal(h.board.style.top, '100px');
   assert.equal(h.reset.disabled, true);
   assert.equal(h.toggle.querySelector().dataset.zoom, 'off');
-  assert.match(fs.readFileSync('index.html', 'utf8'), /data-zoom="off" aria-pressed="true"/);
+  assert.match(fs.readFileSync('tic-tac-toe/index.html', 'utf8'), /data-zoom="off" aria-pressed="true"/);
   assert.equal(h.wheel(-100).prevented, undefined);
   assert.equal(h.camera.scale, 1);
   h.toggle.click('on');
@@ -138,7 +138,7 @@ test('movement switches are independent, start Off, and cannot move a fully fitt
   const h = harness(true);
   assert.equal(h.camera.enabled(h.dragToggle), false);
   assert.equal(h.camera.enabled(h.edgeToggle), false);
-  const html = fs.readFileSync('index.html', 'utf8');
+  const html = fs.readFileSync('tic-tac-toe/index.html', 'utf8');
   for (const id of ['drag-move', 'edge-move']) {
     assert.match(html, new RegExp(`id="${id}"[^<]+<button[^>]+data-move="off" aria-pressed="true"`));
   }

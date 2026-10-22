@@ -1,5 +1,99 @@
 # Fifteen
 
+Fifteen is a collection of two games. Open the
+[game picker](https://etothetaui.github.io/Fifteen/) and choose:
+
+- [Tic-tac-toe](https://etothetaui.github.io/Fifteen/tic-tac-toe/): the original
+  recursive board interface, with Levels 1–6 and the existing opponents.
+- [Relay](https://etothetaui.github.io/Fifteen/relay/): the ten-level emblem
+  interface, using the same original Python rules and AI.
+
+Both games run Python in a background browser worker. The first load downloads
+the runtime. Each game's header links back to the collection. Game URLs use
+directories so direct links and refreshes work on GitHub Pages.
+
+## Relay: level-ten strategy interface
+
+Relay now runs on GitHub Pages or any ordinary static HTTP server at `/relay/`;
+no Python backend is required. Browser progress is saved on this browser and
+site, independently of the local server's save. Use **Game → Export save** to
+transfer an existing `relay-save.json` into the hosted game through **Import**,
+or to keep a backup. Clearing browser data removes the browser save. Storage
+failures are reported as an unsaved session; export before closing it. Browsers
+without Web Locks use an unsaved session to avoid conflicting writes from tabs.
+On supported browsers, tab synchronization preserves stale-preview rejection.
+
+Run `python relay_server.py --open`, or double-click `relay-launch.cmd` on
+Windows for the optional server-backed mode. The local game runs at
+<http://127.0.0.1:8093/>. No packages are required.
+
+Choose an available named relay, read the claim and routing preview, then
+commit one move. **Explore possible replies** inspects hypothetical opponent
+moves without playing them. Each possible reply shows its destination and open
+emblem-group progress. Selecting one advances the hypothetical line by one move;
+**Remove last planned move** returns to compare another branch. Explore up to
+ten individual moves; no planned moves are queued for live play.
+The optional assignment history traces how your candidate affects later routing.
+**Review move** shows the opponent's latest claim;
+**Return to your move** goes directly back to the current assignment.
+Committing, undoing and changing locations bring the turn context back into view.
+**Explore locations** provides access to the full ten-level hierarchy.
+Locations have stable names and references. **World** shows move counts,
+the latest finished location and unfinished emblem groups to watch. Inspecting
+one does not make it playable outside the current assignment. Destination
+previews show existing claims and emblem-group progress before commitment.
+The decision panel marks proposed claims with a dashed outline; the field
+continues to show committed progress. **Inspect parent goal** shows how winning
+the current location contributes to the next level without spending a move.
+After a capture, **Inspect parent result** shows the newly claimed parent entry.
+The lowest parent overview also shows open emblem-group progress inside each of
+its nine child locations, separately from ownership.
+
+Locations keep a patterned visual marker before play, after play and on return.
+**Locations to watch** shows pinned and developing positions, existing claims
+and open emblem progress.
+Pin up to three locations for inspection; a pin does not change legal routing.
+Guidance can be hidden and restored beside a preview or from **Game**. The full
+nine-entry route trace is optional beneath the immediate destination preview.
+Selecting an emblem highlights its members; other legal relays remain usable.
+The location explorer labels ancestors by name and layer. Child choices explore
+deeper; **Open [location name]** opens the selected location's field.
+Destination labels use names and markers; references appear for name collisions
+and in the current-location heading and route details. The layer label describes
+actual activity inside the location at every depth; it does not replace its
+identity. Location markers have no ownership or emblem meaning.
+
+The optional worked examples replay recorded legal moves in a separate state.
+The opening example starts empty and shows a return to earlier claims; the
+capture example shows location ownership propagating to its parent. Neither
+changes the live game or predicts that the opponent will repeat those choices.
+Closing and reopening reply exploration preserves the hypothetical line for
+the same candidate. **Show the capturing reply** replaces that line with the
+specific verified reply. Undo removes your move and its computer reply; its
+label states the scope before you act.
+
+The Game menu provides computer and two-person games, export and import. In
+server-backed mode, play is saved to `relay-save.json`; browser mode uses local
+browser storage. Keep an exported copy before starting over.
+The original interface and the older experiment's saves are separate.
+
+Relay imports the shared adapter in `campaign.py`, which delegates all rules
+and AI to the unchanged original modules. Browser and server transports call
+the same `relay_api.py` boundary. There is one game move per turn;
+no descendants are completed automatically. The complete requirements are in
+[RELAY_REQUIREMENTS.md](RELAY_REQUIREMENTS.md).
+
+Run `python -m unittest discover -v` for all project checks. The additional
+contract tests compare long move sequences with `GameState` and exercise the
+real local HTTP boundary. Browser playtesting notes are recorded in
+[RELAY_VERIFICATION.md](RELAY_VERIFICATION.md).
+The learning-curve worklist and blind-playtest evidence are recorded in
+[RETENTION_IMPROVEMENTS.md](RETENTION_IMPROVEMENTS.md) and
+[RETENTION_TEST_LOG.md](RETENTION_TEST_LOG.md). These are qualitative agent
+playtests; human retention rates and time to understanding remain unmeasured.
+
+## Original interface
+
 Tic-tac-toe with recursive boards, for the browser and terminal, using a Python alpha-beta engine.
 
 The main browser game defaults to Level 1, Human X, regular Computer O, zero
@@ -165,7 +259,8 @@ assert session.position.forced == (6, 1)
 
 ### Play online
 
-[Play Fifteen](https://etothetaui.github.io/Fifteen/) in your browser.
+[Open the collection](https://etothetaui.github.io/Fifteen/) in your browser,
+then choose Tic-tac-toe or Relay.
 Choose two players, play as X or O against the computer, or watch two computers.
 The first visit downloads the Python runtime and may take a moment.
 
@@ -177,8 +272,9 @@ From this directory, start a static server:
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8000 in a modern browser. Do not open `index.html` directly
-as a file: the Python loader needs HTTP. Choose Human, Computer, or Experimental for each letter. This also allows
+Open http://127.0.0.1:8000 in a modern browser and choose a game. Direct paths
+are `/tic-tac-toe/` and `/relay/`. Do not open `index.html` directly
+as a file: the Python loader needs HTTP. In Tic-tac-toe, choose Human, Computer, or Experimental for each letter. This also allows
 automatic matches between the two bots. Changing either player or pressing
 **New game** starts a new game, including during AI play. **Keep playing** or
 Escape cancels a pending restart without changing the selected players or level.
@@ -201,8 +297,10 @@ describe the current startup stage; **Retry loading** restarts a failed load.
 `ui.py` handles browser snapshots, status messages, and terminal input/output.
 Both interfaces use the same game session; the AI adapter inherits the shared
 state and reuses the original move handling and sum-to-15 win rule. The magic-square values stay internal; they are not shown in the UI.
-`web.js` renders snapshots and forwards input; `python-worker.js` runs Python
-and the existing engine through Pyodide 0.28.1 in a background worker. `web.css`
+`web.js` renders board snapshots and forwards input; `python-worker.js` runs Python
+and the existing engine through Pyodide 0.28.1 in a background worker for either
+game. Relay's browser transport uses `relay_browser.py` and `relay_api.py` to
+call the same `Campaign` operations as its optional HTTP server. `web.css`
 contains presentation styles. An internet connection is required to download
 the pinned Python runtime from jsDelivr on first use; fonts load from Google
 Fonts with local fallbacks. No game data is sent to a Python server.
@@ -505,3 +603,7 @@ interrupted. Large level counts grow the board rapidly.
 ## License
 
 Licensed under the GNU Affero General Public License, version 3.0 only (`AGPL-3.0-only`). See [LICENSE](LICENSE) for the full text.
+
+Relay's visual key uses blue circles and red diamonds for ownership, open rings for unclaimed relays, and gold dashed outlines for previews. Connected relay symbols show each emblem group; three-part meters show progress. The claim-to-destination diagram shows whose turn follows and where. Capture warnings use a warning triangle, and crossed-out emblem groups show a blocked opportunity. Select a relay to preview; only **Commit** spends the move.
+
+Each relay displays its emblems. Claim all three relays sharing any one emblem to win the location. Select an emblem above the board to bring its three members together and highlight their matching badges; **Clear highlight** restores the full view. A relay may carry several emblems. These badges name the existing winning groups and introduce no new rules. At higher levels, the three matching children must each be won before they count as owned.

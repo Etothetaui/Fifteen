@@ -357,7 +357,7 @@ function boot() {
   modes.disabled = true; levels.disabled = true; newGame.disabled = true;
   retry.hidden = true; statusText.textContent = 'Loading…';
   substatus.textContent = 'Starting…';
-  const currentWorker = new Worker('python-worker.js?ui=deep-performance');
+  const currentWorker = new Worker('python-worker.js?ui=collection');
   worker = currentWorker;
   currentWorker.onerror = event => { if (worker === currentWorker) fail(event.message); };
   currentWorker.onmessage = ({data}) => {

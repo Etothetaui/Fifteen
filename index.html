@@ -1,77 +1,30 @@
 <!doctype html>
-<html lang="en" data-default-levels="1">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f5f2e9">
-  <title>Fifteen</title>
-  <link rel="stylesheet" href="web.css?ui=deep-performance">
-  <script src="winning-lines.js?ui=cached-layer-geometry" defer></script>
-  <script src="toggle-selection.js" defer></script>
-  <script src="board-camera.js?ui=main-board-playable" defer></script>
-  <script src="selection-lens.js?ui=smooth-keyboard-zoom" defer></script>
-  <link rel="stylesheet" href="magnifier-layout.css?ui=main-board-playable">
-  <link rel="stylesheet" href="game-layout.css?ui=destination-outline">
-  <script src="web.js?ui=center-grid-selector" defer></script>
-  <script src="board-ink.js?ui=playable-scope-selector" defer></script>
-  <script src="magnifier-game.js?ui=selector-in-all-views" defer></script>
+  <meta name="theme-color" content="#10171d">
+  <title>Fifteen · Games</title>
+  <link rel="stylesheet" href="collection.css?ui=collection">
 </head>
-<body class="main-game" data-layout="7" data-magnifiers="0">
-  <div id="game-header"><div id="game-brand"></div><div id="game-status"></div><button id="settings-open" type="button">Game &amp; navigation settings</button></div>
-  <div id="game-tools"><button id="new-game" class="new-game" disabled>New game</button><button id="zoom-out" type="button">Zoom all the way out</button><button id="go-legal" type="button">Go to legal area</button><button id="show-legal" type="button">Fit legal area</button><button id="readable-detail" type="button">Readable detail</button><button id="last-move-view" type="button" disabled>Last move</button><button id="return-view" type="button" disabled>Return</button></div>
-  <main id="main-board-workspace">
-    <aside class="sidebar" aria-label="Game controls">
-      <header><a class="brand" href="./">fifteen</a><span id="version">Development preview</span></header>
-      <fieldset id="modes" disabled aria-label="Players">
-        <div class="player" id="player-x"><span class="player-symbol">X</span><div class="player-options" role="group" aria-label="X player"><button type="button" data-controller="human" aria-pressed="true">Human</button><button type="button" data-controller="computer" aria-pressed="false">Computer</button><button type="button" data-controller="experimental" aria-pressed="false">Experimental</button></div></div>
-        <div class="player" id="player-o"><span class="player-symbol">O</span><div class="player-options" role="group" aria-label="O player"><button type="button" data-controller="human" aria-pressed="false">Human</button><button type="button" data-controller="computer" aria-pressed="true">Computer</button><button type="button" data-controller="experimental" aria-pressed="false">Experimental</button></div></div>
-      </fieldset>
-      <fieldset id="levels" disabled aria-describedby="levels-note"><legend>Levels</legend><div class="level-options"></div></fieldset>
-      <div class="status-wrap" role="status" aria-live="polite" aria-atomic="true"><h2 id="status">Loading…</h2><p id="substatus">Downloading the Python runtime.</p></div>
-      <div class="game-top"><span id="board-title">Board</span><span id="move-count">MOVE 00 / 09</span></div>
-      <details id="position-picker" class="position-picker">
-        <summary>Choose position</summary>
-        <p id="picker-label">Loading…</p>
-        <div id="picker-grid" class="picker-grid" role="group" aria-labelledby="picker-label" tabindex="-1"></div>
-        <button id="picker-back" type="button" hidden>Back</button>
-      </details>
-      <div class="moves"><span>Moves</span><p id="history">No moves yet.</p></div>
-      <button id="retry" hidden>Retry loading</button>
-      <details class="help">
-        <summary>How to play</summary>
-        <p>X starts. Take turns placing a mark in an available empty square. Three of your marks in a row wins a board. A full board without a winner is drawn.</p>
-        <p>Level 1 is one board. At higher levels, winning a smaller board claims its position in the board containing it. Win the outermost board to win the game. Won or drawn boards are closed. A diamond (◆) marks a drawn board.</p>
-        <p>Your move sends the next player to the matching board: at level 2, square 5 sends them to board 5. At level 3, position 2 / 5 / 7 sends them to board 5 / 7.</p>
-        <p>If that destination is closed, play opens within its nearest unfinished containing board. If the outer destination is closed, play opens across the whole board. The turn message shows where you can play.</p>
-        <p id="keyboard-help">WASD moves the first magnifier; Q zooms out and E zooms in. TFGH moves the second; R zooms out and Y zooms in. Arrow keys move the move selector within the playable area, independently of the magnifiers. Space plays. Home and End select the first and last squares of that area.</p>
-      </details>
-      <p id="levels-note" class="mode-note">Changing players or levels starts a new game.</p>
-    </aside>
-    <section id="lens-stage" aria-label="Non-playable whole board"><canvas id="lens-overview" aria-label="Whole board overview"></canvas><div id="selection-lens" role="group" tabindex="0" aria-label="First magnifier; drag or use WASD to move"></div></section>
-    <section id="middle-lens-stage" aria-label="Non-playable magnified board"><canvas id="middle-lens-board" aria-label="Magnified board overview"></canvas><div id="second-selection-lens" role="group" tabindex="0" aria-label="Second magnifier; drag or use TFGH to move"></div></section>
-    <section class="play-area" aria-label="Game board">
-      <div id="board-viewport" class="board-viewport"><div id="board" class="board" role="group" aria-label="Tic-tac-toe board" aria-describedby="keyboard-help"></div></div>
-    </section>
-    <aside class="navigation-controls" aria-labelledby="navigation-title">
-      <h2 id="navigation-title">Navigation Controls</h2>
-      <div class="zoom-control"><span id="magnifier-label">Magnifiers</span><div id="magnifier-count" class="player-options" role="group" aria-labelledby="magnifier-label"><button type="button" data-count="0" aria-pressed="true">0</button><button type="button" data-count="1" aria-pressed="false">1</button><button type="button" data-count="2" aria-pressed="false">2</button></div></div>
-      <div class="zoom-control"><span id="routing-label">Routing outlines</span><div id="routing-outlines" class="player-options" role="group" aria-labelledby="routing-label"><button type="button" data-routing="off" aria-pressed="true">Off</button><button type="button" data-routing="on" aria-pressed="false">On</button></div></div>
-      <div class="zoom-control"><span id="auto-legal-label">Auto-show legal region</span><div id="auto-legal" class="player-options" role="group" aria-labelledby="auto-legal-label"><button type="button" data-auto-legal="off" aria-pressed="true">Off</button><button type="button" data-auto-legal="human" aria-pressed="false">Before human move</button><button type="button" data-auto-legal="all" aria-pressed="false">After all moves</button></div></div>
-      <div class="zoom-control"><span id="move-input-label">Move input</span><div id="move-input" class="player-options" role="group" aria-labelledby="move-input-label"><button type="button" data-input="play" aria-pressed="true">Play</button><button type="button" data-input="preview" aria-pressed="false">Preview</button></div></div>
-      <div id="camera-controls">
-      <div class="zoom-control"><span id="scroll-zoom-label">Scroll to zoom</span><div id="scroll-zoom" class="player-options" role="group" aria-labelledby="scroll-zoom-label"><button type="button" data-zoom="off" aria-pressed="true">Off</button><button type="button" data-zoom="on" aria-pressed="false">On</button></div></div>
-      <div class="movement-controls">
-        <div class="zoom-control"><span id="drag-move-label">Drag to move</span><div id="drag-move" class="player-options" role="group" aria-labelledby="drag-move-label"><button type="button" data-move="off" aria-pressed="true">Off</button><button type="button" data-move="on" aria-pressed="false">On</button></div></div>
-        <div class="zoom-control"><span id="edge-move-label">Edge scrolling</span><div id="edge-move" class="player-options" role="group" aria-labelledby="edge-move-label"><button type="button" data-move="off" aria-pressed="true">Off</button><button type="button" data-move="on" aria-pressed="false">On</button></div></div>
-      </div>
-      </div>
-    </aside>
+<body>
+  <main>
+    <header><a class="brand" href="./">Fifteen</a><span>v0.4.0-dev</span></header>
+    <h1>Choose a game</h1>
+    <div class="games">
+      <a class="game" href="tic-tac-toe/">
+        <div class="board" aria-hidden="true"><i>×</i><i></i><i>○</i><i></i><i>×</i><i></i><i>○</i><i></i><i>×</i></div>
+        <h2>Tic-tac-toe</h2>
+        <p>Play recursive boards across one to six levels.</p>
+        <span class="open">Play tic-tac-toe <b aria-hidden="true">→</b></span>
+      </a>
+      <a class="game relay" href="relay/">
+        <div class="emblems" aria-hidden="true"><i>☼</i><span>—</span><i>☼</i><span>—</span><i>☼</i></div>
+        <h2>Relay</h2>
+        <p>Claim relays, complete emblem groups, and route your opponent through ten levels.</p>
+        <span class="open">Play Relay <b aria-hidden="true">→</b></span>
+      </a>
+    </div>
   </main>
-  <dialog id="settings-dialog" aria-label="Game and navigation settings"><button id="settings-close" type="button">Close settings</button><div id="settings-content"></div></dialog>
-  <dialog id="reset-dialog" aria-labelledby="reset-question">
-    <p id="reset-question">End this game and start a new one?</p>
-    <div class="reset-actions"><button id="reset-cancel" type="button" autofocus>Keep playing</button><button id="reset-confirm" type="button">New game</button></div>
-  </dialog>
-  <noscript>This game needs JavaScript enabled to run Python in your browser.</noscript>
 </body>
 </html>

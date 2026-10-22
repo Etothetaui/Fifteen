@@ -1,6 +1,6 @@
 """Single source of truth for the Fifteen application version."""
 
-__version__ = "0.3.1-dev"
+__version__ = "0.4.0-dev"
 
 
 if __name__ == "__main__":

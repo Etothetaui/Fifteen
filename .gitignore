@@ -4,4 +4,6 @@ __pycache__/
 venv/
 .DS_Store
 Thumbs.db
+/relay-save.json
+/relay-save.tmp
 AGENTS.md

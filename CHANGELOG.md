@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0-dev
+
+- Make Fifteen a collection with a game picker at the index page, and separate
+  `/tic-tac-toe/` and `/relay/` URLs. Both games link back to the collection.
+- Add Relay as the second game, preserving exact original L10 rules, one move
+  per turn, routing, closure, cascades and existing AI. Include emblem groups,
+  claim/destination previews, opponent reports, location inspection and pins,
+  hypothetical replies, undo, import/export and separate worked examples.
+- Run Relay on static hosting through the existing Pyodide worker loader and
+  authoritative Python adapter. Share API dispatch with the optional local
+  server; keep the original board game's controls and opponents unchanged.
+- Save hosted Relay progress in browser storage with cross-tab serialization
+  and stale-preview protection. Preserve the server save format for transfers,
+  report storage failures, and keep an exportable unsaved-session fallback.
+- Include the Relay requirements, completed learning-curve worklist, blind
+  playtest evidence and rule/transport regression checks.
+
 ## 0.3.1-dev
 
 - Draw the world-coordinate selector in every existing board view and refresh
